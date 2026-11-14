@@ -3415,5 +3415,112 @@ body.mfa-focus-immersive .focusCoffeeAction{left:0!important}
 }
 </style>
 
+
+<style id="mfa-v34-forced-sidebar-glass">
+/* Apply the glass treatment whenever the live focus scene is mounted. */
+body.mfa-focus-immersive #sideNav,
+body:has(#extraPage .focusStage) #sideNav{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  z-index:70!important;
+}
+body.mfa-focus-immersive #sideNav .navItem,
+body:has(#extraPage .focusStage) #sideNav .navItem{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+}
+body.mfa-focus-immersive #sideNav .navItem.active,
+body:has(#extraPage .focusStage) #sideNav .navItem.active{
+  background:rgba(230,207,169,.16)!important;
+  border-color:rgba(235,215,181,.22)!important;
+  box-shadow:inset 2px 0 rgba(223,197,156,.9)!important;
+}
+@media(min-width:651px){
+  body.mfa-focus-immersive #appShell,
+  body:has(#extraPage .focusStage) #appShell{
+    width:calc(100% - 248px)!important;
+    margin-left:248px!important;
+    max-width:none!important;
+  }
+  body.mfa-focus-immersive #extraPage,
+  body:has(#extraPage .focusStage) #extraPage{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+  }
+}
+@media(max-width:650px){
+  body:has(#extraPage .focusStage) #appShell{width:100%!important;margin:0!important}
+  body:has(#extraPage .focusStage) #extraPage{width:100%!important;margin:0!important}
+}
+</style>
+<script id="mfa-v34-forced-sidebar-glass-script">
+(function(){
+ 'use strict';
+ const extra=document.getElementById('extraPage');
+ const app=document.getElementById('appShell');
+ const nav=document.getElementById('sideNav');
+ if(!extra||!nav)return;
+ const sync=()=>{
+  const stage=extra.querySelector('.focusStage');
+  const active=!!stage&&!extra.hidden;
+  document.body.classList.toggle('mfa-focus-immersive',active);
+  if(!active){
+   ['background','background-color','background-image','border','box-shadow','backdrop-filter','-webkit-backdrop-filter','z-index'].forEach(k=>nav.style.removeProperty(k));
+   return;
+  }
+  const rail=Math.round(nav.getBoundingClientRect().width)||248;
+  nav.style.setProperty('background','transparent','important');
+  nav.style.setProperty('background-color','transparent','important');
+  nav.style.setProperty('background-image','none','important');
+  nav.style.setProperty('border','0','important');
+  nav.style.setProperty('box-shadow','none','important');
+  nav.style.setProperty('backdrop-filter','none','important');
+  nav.style.setProperty('-webkit-backdrop-filter','none','important');
+  nav.style.setProperty('z-index','70','important');
+  if(app&&window.innerWidth>650){
+   app.style.setProperty('width', 'calc(100% - '+rail+'px)','important');
+   app.style.setProperty('margin-left',rail+'px','important');
+   app.style.setProperty('max-width','none','important');
+   stage.style.setProperty('width','100vw','important');
+   stage.style.setProperty('margin-left',(-rail)+'px','important');
+   stage.style.setProperty('margin-right','0','important');
+  }else{
+   if(app){
+    app.style.setProperty('width','100%','important');
+    app.style.setProperty('margin-left','0','important');
+   }
+   stage.style.setProperty('width','100%','important');
+   stage.style.setProperty('margin-left','0','important');
+  }
+  stage.style.setProperty('position','relative','important');
+  stage.style.setProperty('z-index','0','important');
+  stage.style.setProperty('overflow','hidden','important');
+  stage.style.setProperty('background-color','#091321','important');
+ };
+ const old=window.goPage;
+ if(typeof old==='function'){
+  window.goPage=function(page){
+   const result=old.apply(this,arguments);
+   requestAnimationFrame(sync);
+   setTimeout(sync,80);
+   return result;
+  };
+ }
+ const observer=new MutationObserver(sync);
+ observer.observe(extra,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+ sync();
+ window.addEventListener('resize',sync,{passive:true});
+ window.MINIK_AKADEMI_V34={sidebarGlassForced:true,backgroundExtendsUnderNav:true};
+})();
+</script>
+
 </body>
 </html>
