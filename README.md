@@ -1,4 +1,4 @@
-# Minik Akademi v18
+# Minik Akademi v19
 
 Pastel tasarımlı, telefon ve masaüstü uyumlu TYT fen öğrenme platformu. Ana uygulama tek bir `index.html` dosyasıyla çalışır; ek sunucu veya ücretli ön yüz servisi gerektirmez.
 
@@ -10,17 +10,22 @@ Pastel tasarımlı, telefon ve masaüstü uyumlu TYT fen öğrenme platformu. An
 | TYT Kimya | 7 | 280 | 28 | 4 dijital model |
 | TYT Biyoloji | 8 | 320 | 32 | 6 dijital model |
 
-Fizik bankası v17'de baştan düzenlendi; 11 konuda 440 farklı soru kökü vardır. Her konuda dört ayrı test ve toplam 40 soru bulunur.
+Fizik bankası 11 konuda 440 farklı soru kökü içerir. Her konuda dört ayrı test ve toplam 40 soru bulunur.
+
+## Otomatik gece modu
+
+- Site yerel cihaz saatine göre **19.00–07.00** arasında otomatik koyu temaya geçer.
+- Saat kontrolü site açıkken dakikada bir yenilenir ve sekme yeniden görünür olduğunda tekrar kontrol edilir.
+- Pomodoro veya serbest sayaç çalışırken gündüz saatlerinde de odak için koyu tema etkinleşir.
+- Gece modu sayaç sayfasıyla sınırlı değildir; akademinin diğer bölümlerinde de uygulanır.
 
 ## Lo-Fi Ders Sayacı
 
-- Yağmurlu, pencereli gece manzarası; şehir ışıkları, hareketli yağmur, sıcak masa lambası, kitaplar ve çalışma masası detayları.
-- Dairesel Pomodoro göstergesi ve tur sayacı.
-- Pomodoro çalışma ve mola döngüsü; dördüncü turun ardından uzun mola.
+- Gerçekçi, yağmurlu gece çalışma masası fotoğrafı; sıcak masa lambası, kitaplık, fincan ve şehir ışıkları.
+- Fotoğrafın üzerinde çok hafif hareketli yağmur damlaları ve yavaş kamera hareketi.
+- Dairesel Pomodoro göstergesi, tur sayacı, 25/5 dakika döngüsü ve dördüncü turun ardından 15 dakikalık uzun mola.
 - Serbest kronometre, oturum kaydı, ders ve günlük hedef seçimi.
-- Sayaç çalışırken tüm uygulama koyu gece temasına geçer; duraklatıldığında veya oturum bitirildiğinde normal tema geri gelir.
 - Günlük toplam ve son yedi günün çalışma geçmişi.
-- Oturum kayıtları cihazda saklanır; hesap senkronizasyonu etkinse mevcut Supabase hesap verisine de eklenir.
 
 ## Çıkmış Sorular ve MEB kaynakları
 
@@ -33,18 +38,12 @@ Ders kütüphanesindeki **Çıkmış Sorular & Kaynaklar** bölümünden OGM TYT
 3. **Actions** sekmesinde **Publish Minik Akademi** iş akışının tamamlanmasını kontrol et.
 4. Site adresi: `https://cringeise.github.io/minik-akademi/`
 
-`.github/workflows/deploy.yml` dosyası `main` dalına her gönderimde siteyi yayımlamak üzere ayarlanmıştır.
-
 ## Supabase kurulumu
 
 1. Supabase projesinde SQL Editor'ü aç.
 2. `supabase/student_progress.sql` dosyasının içeriğini çalıştır.
 3. Site kodunda yalnızca Supabase URL ve publishable/anon anahtarı bulunmalıdır. `service_role` veya secret key'i istemci koduna ekleme.
 4. Canlı URL belli olduktan sonra Authentication → URL Configuration bölümündeki Site URL ve Redirect URLs alanlarını bu adresle eşleştir.
-
-### E-posta doğrulaması ve ücretsiz kullanım
-
-Supabase'in varsayılan e-posta servisi kısıtlıdır. Harici SMTP olmadan doğrulama veya parola yenileme e-postalarının her adrese ulaşacağı garanti değildir. Ücretli servis eklenmedi. E-posta doğrulamasını kapatmak güvenlik tercihini değiştirir; bunu yalnızca etkilerini bilerek Supabase panelinden yap.
 
 ## Gizlilik ve kayıtlar
 
@@ -53,7 +52,6 @@ Supabase'in varsayılan e-posta servisi kısıtlıdır. Harici SMTP olmadan doğ
 - Hesapsız kullanımda kayıtlar kullanılan tarayıcının yerel depolamasında kalır.
 - Ders sayacı oturumları yerel olarak saklanır ve hesap senkronizasyonuna eklenir.
 - Siteye reklam veya analitik takip SDK'sı eklenmemiştir.
-- Kimya ve biyoloji atölyeleri güvenli dijital eğitim modelleridir; gerçek kimyasal madde kullanma talimatı içermez.
 
 ## Proje dosyaları
 
