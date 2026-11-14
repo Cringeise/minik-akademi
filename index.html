@@ -2189,7 +2189,7 @@ function todaySeconds(){const key=dayKey();return focusSessions.filter(x=>x.date
 function formatSeconds(total,withHours=false){total=Math.max(0,Math.floor(total||0));const h=Math.floor(total/3600),m=Math.floor(total%3600/60),sec=total%60;return withHours?`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${String(Math.floor(total/60)).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
 function prettyDuration(sec){sec=Math.max(0,Math.floor(sec||0));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60);if(h)return `${h} sa ${m} dk`;if(m)return `${m} dk`;return `${sec} sn`;}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function rainDrops(){return '<div class="focusLightningGlow"></div><div class="focusExteriorRain" aria-hidden="true"><i class="outsideRainLayer far"></i><i class="outsideRainLayer middle"></i><i class="outsideRainLayer near"></i></div><div class="focusWindowFrame" aria-hidden="true"><i class="focusWindowVertical"></i><i class="focusWindowHorizontal"></i><i class="focusWindowReflection"></i><i class="focusWindowCondensation"></i><i class="focusWindowBead beadOne"></i><i class="focusWindowBead beadTwo"></i><i class="focusWindowBead beadThree"></i></div>';}
+function rainDrops(){return '<div class="focusExteriorRain" aria-hidden="true"></div><div class="focusLightningGlow" aria-hidden="true"></div><canvas class="focusGlassCanvas" aria-hidden="true" role="presentation"></canvas><div class="focusWindowFrame" aria-hidden="true"><i class="focusWindowVertical"></i><i class="focusWindowHorizontal"></i><i class="focusWindowReflection"></i><i class="focusWindowCondensation"></i></div>';}
 function updateCoffeeVisual(){
  const liquid=document.getElementById('focusCoffeeLiquid'),cup=document.getElementById('focusGlassCup'),station=document.getElementById('focusCoffeeStation'),status=document.getElementById('focusCoffeeStatus'),tag=document.getElementById('focusCupTag'),steam=document.getElementById('focusCupSteam'),action=document.getElementById('focusCoffeeAction');
  if(liquid){const h=36*Math.max(0,Math.min(1,coffeeState.level));liquid.setAttribute('y',(17+36-h).toFixed(2));liquid.setAttribute('height',h.toFixed(2));}
@@ -3285,11 +3285,11 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
   usageTimer=setInterval(()=>track(currentPage),60000);
  }
  function updateAdminButton(){
-  const isAdmin=!!(mfaUser&&mfaUser.app_metadata&&mfaUser.app_metadata.role==='admin');
+  const ownerEmail=String(mfaUser?.email||'').toLowerCase();const isAdmin=!!(mfaUser&&(mfaUser.app_metadata?.role==='admin'||ownerEmail==='ebrarzakirsag@gmail.com'));
   let b=document.getElementById('mfaAdminButton');
   if(isAdmin&&!b){
    b=document.createElement('button');b.type='button';b.id='mfaAdminButton';b.className='accountBtn';
-   b.textContent='🛠 Yönetim';b.addEventListener('click',openAdminPanel);
+   b.textContent='🛠 Yönetim';b.type='button';b.onclick=()=>window.openAdminPanel();
    const account=document.getElementById('accountButton');
    if(account&&account.parentElement)account.insertAdjacentElement('afterend',b);
   }else if(!isAdmin&&b)b.remove();
@@ -3311,7 +3311,9 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
  }
  function fmtDate(value){if(!value)return 'Henüz yok';const d=new Date(value);return Number.isNaN(d.getTime())?'—':d.toLocaleString('tr-TR',{dateStyle:'medium',timeStyle:'short'});}
  async function openAdminPanel(){
-  if(!mfaClient||!mfaUser||mfaUser.app_metadata?.role!=='admin'){alert('Bu alan yalnızca site yöneticisine açıktır.');return;}
+  if(!mfaClient||!mfaUser||String(mfaUser.email||'').toLowerCase()!=='ebrarzakirsag@gmail.com'){alert('Bu alan yalnızca tanımlı yönetici hesabına açıktır.');return;}
+  try{const refreshed=await mfaClient.auth.refreshSession();if(refreshed?.data?.session)mfaUser=refreshed.data.session.user;}catch(refreshError){console.warn('Admin session refresh:',refreshError);}
+  
   currentPage='other';track('other');
   document.getElementById('homePage').hidden=true;
   const extra=document.getElementById('extraPage');extra.hidden=false;
@@ -3345,6 +3347,275 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
   }).catch(e=>console.warn('Session refresh:',e));
  }
  mfaUpdateAccountUI();
+})();
+</script>
+
+
+<style id="mfa-v28-account-modal-contrast">
+/* The account dialog keeps its soft light palette even when the study room is in night mode. */
+body.mfa-night #accountShade .accountModal{
+ background:linear-gradient(145deg,#fffafd,#fff7fa)!important;
+ color:#594d66!important;border:1px solid #eadfea!important;
+ box-shadow:0 24px 80px rgba(2,7,16,.42)!important;
+}
+body.mfa-night #accountShade .accountModal h2,
+body.mfa-night #accountShade .accountModal label,
+body.mfa-night #accountShade .accountModal strong,
+body.mfa-night #accountShade .accountModal b{color:#584a66!important}
+body.mfa-night #accountShade .accountModal p,
+body.mfa-night #accountShade .accountModal .tiny{color:#81758c!important}
+body.mfa-night #accountShade .accountModal input{
+ background:#fff!important;color:#51445f!important;
+ border:1px solid #e6dce9!important;caret-color:#8068a8!important;
+}
+body.mfa-night #accountShade .accountModal input::placeholder{color:#a296aa!important}
+body.mfa-night #accountShade .accountModal .authMsg{
+ background:#f2edfb!important;color:#685783!important;border:1px solid #e8e0f3!important;
+}
+body.mfa-night #accountShade .accountModal .daily{
+ background:#fff0f5!important;color:#725d79!important;border:1px solid #f1e3ed!important;
+}
+body.mfa-night #accountShade .accountModal a{color:#7963a7!important}
+body.mfa-night #accountShade .accountModal .accountBtn{
+ background:#fff!important;color:#76618f!important;border:1px solid #eadfea!important;
+}
+body.mfa-night #accountShade .accountModal .btn.secondary{
+ background:#fff!important;color:#7966a7!important;border:1px solid #e9e1ee!important;
+}
+body.mfa-night #mfaAdminButton{background:#172235!important;color:#f5e7ca!important;border-color:#596078!important}
+</style>
+<style id="mfa-v28-real-wet-window">
+/* Exterior stays softly out of focus; the droplets are drawn on the glass in front of it. */
+.focusSky .focusGlassRainCanvas,.focusStage .focusRainDrop,.outsideRainLayer{display:none!important}
+.focusSky .focusExteriorRain{
+ position:absolute!important;inset:4.5% 5.2% 14.5%!important;z-index:0!important;
+ overflow:hidden!important;pointer-events:none!important;border-radius:2px;
+ background:
+  radial-gradient(ellipse at 50% 100%,rgba(5,12,23,.92),transparent 48%),
+  linear-gradient(180deg,#1c3147 0%,#35495c 48%,#18283b 100%)!important;
+}
+.focusSky .focusExteriorRain:before{
+ content:"";position:absolute;inset:-8%;
+ background:
+  radial-gradient(circle at 12% 26%,rgba(255,190,119,.92) 0 2px,rgba(255,184,105,.42) 5px,transparent 33px),
+  radial-gradient(circle at 29% 41%,rgba(250,198,144,.82) 0 2px,rgba(250,198,144,.34) 6px,transparent 39px),
+  radial-gradient(circle at 49% 33%,rgba(181,207,233,.72) 0 2px,rgba(181,207,233,.28) 6px,transparent 36px),
+  radial-gradient(circle at 73% 24%,rgba(255,217,160,.86) 0 2px,rgba(255,197,128,.32) 6px,transparent 35px),
+  radial-gradient(circle at 89% 45%,rgba(234,201,163,.77) 0 2px,rgba(234,201,163,.25) 6px,transparent 42px),
+  linear-gradient(160deg,transparent 0 39%,rgba(11,26,42,.45) 40% 51%,transparent 52%),
+  linear-gradient(20deg,transparent 0 46%,rgba(9,21,36,.54) 47% 62%,transparent 63%);
+ filter:blur(10px);opacity:.96;transform:scale(1.08);
+}
+.focusSky .focusExteriorRain:after{
+ content:"";position:absolute;left:-4%;right:-4%;bottom:-2%;height:34%;
+ background:linear-gradient(180deg,transparent,rgba(5,12,22,.7));
+ clip-path:polygon(0 72%,12% 46%,22% 68%,34% 34%,46% 66%,58% 39%,72% 68%,85% 30%,100% 65%,100% 100%,0 100%);
+}
+.focusSky .focusGlassCanvas{
+ position:absolute!important;inset:4.5% 5.2% 14.5%!important;
+ width:auto!important;height:auto!important;z-index:2!important;
+ display:block!important;pointer-events:none!important;opacity:.98!important;
+}
+.focusSky .focusWindowFrame{
+ position:absolute!important;inset:4.5% 5.2% 14.5%!important;z-index:3!important;
+ border:9px solid rgba(10,20,35,.73)!important;border-radius:3px!important;
+ pointer-events:none!important;
+ box-shadow:inset 0 0 0 1px rgba(226,240,249,.28),
+ inset 0 0 30px rgba(3,10,20,.16),0 4px 16px rgba(0,0,0,.16)!important;
+}
+.focusSky .focusWindowVertical{
+ position:absolute;left:58%;top:0;bottom:0;width:7px;
+ background:linear-gradient(90deg,#101b2bcc,#8494a455,#0b1728dd);
+ box-shadow:0 0 0 1px #dce8f01a;
+}
+.focusSky .focusWindowHorizontal{
+ position:absolute;left:0;right:0;top:48%;height:6px;
+ background:linear-gradient(180deg,#101b2bcc,#8494a455,#0b1728dd);
+ box-shadow:0 0 0 1px #dce8f01a;
+}
+.focusSky .focusWindowReflection{
+ position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(116deg,transparent 0 27%,rgba(235,247,255,.075) 28%,transparent 30% 62%,rgba(235,247,255,.045) 63%,transparent 66%);
+ mix-blend-mode:screen;
+}
+.focusSky .focusWindowCondensation{
+ position:absolute;inset:0;pointer-events:none;opacity:.64;filter:blur(6px);
+ background:
+  radial-gradient(ellipse at 1% 98%,rgba(217,235,245,.28),transparent 28%),
+  radial-gradient(ellipse at 99% 3%,rgba(217,235,245,.18),transparent 24%),
+  linear-gradient(90deg,rgba(225,239,247,.08),transparent 13%,transparent 87%,rgba(225,239,247,.06));
+}
+.focusSky .focusLightningGlow{z-index:1!important;clip-path:inset(4.5% 5.2% 14.5%)}
+@media(max-width:650px){
+ .focusSky .focusExteriorRain,.focusSky .focusGlassCanvas{inset:3.5% 3.5% 13.5%!important}
+ .focusSky .focusWindowFrame{inset:3.5% 3.5% 13.5%!important;border-width:6px!important}
+ .focusSky .focusWindowVertical{width:5px}
+ .focusSky .focusWindowHorizontal{height:4px}
+}
+@media(prefers-reduced-motion:reduce){.focusSky .focusLightningGlow{animation:none!important}}
+</style>
+<script id="mfa-v28-glass-drop-simulation">
+(function(){
+ 'use strict';
+ const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+ const instances=new Set();
+ const rand=(a,b)=>a+Math.random()*(b-a);
+ function makeState(w,h){
+  const microCount=Math.max(120,Math.min(300,Math.round(w*h/2100)));
+  const micro=Array.from({length:microCount},()=>({
+   x:rand(0,w),y:rand(0,h),r:rand(.35,1.15),alpha:rand(.07,.2),phase:rand(0,6.28)
+  }));
+  const beads=Array.from({length:58},()=>({
+   x:rand(0,w),y:rand(0,h),r:rand(1.2,4.7),alpha:rand(.18,.43),
+   speed:rand(2.2,11),drift:rand(-.35,.35),trail:rand(7,46),
+   phase:rand(0,6.28),alive:true,large:Math.random()<.11
+  }));
+  const rivulets=Array.from({length:9},()=>({
+   x:rand(0,w),y:rand(0,h),length:rand(24,120),speed:rand(2,7),
+   width:rand(.45,1.1),alpha:rand(.045,.13),phase:rand(0,6.28)
+  }));
+  return {micro,beads,rivulets};
+ }
+ function drawMicro(ctx,d){
+  const r=d.r;
+  ctx.beginPath();ctx.ellipse(d.x,d.y,r*.78,r,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(220,239,250,'+d.alpha+')';ctx.fill();
+  ctx.beginPath();ctx.arc(d.x-r*.18,d.y-r*.24,Math.max(.25,r*.24),0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,'+(d.alpha*.9)+')';ctx.fill();
+ }
+ function drawBead(ctx,d){
+  if(!d.alive)return;
+  const r=d.r;
+  if(d.trail>r*2){
+   const tail=ctx.createLinearGradient(d.x,d.y-d.trail,d.x+d.drift*4,d.y-r*.25);
+   tail.addColorStop(0,'rgba(197,225,242,0)');
+   tail.addColorStop(.72,'rgba(207,232,246,'+(d.alpha*.18)+')');
+   tail.addColorStop(1,'rgba(237,248,255,'+(d.alpha*.58)+')');
+   ctx.beginPath();ctx.moveTo(d.x,d.y-d.trail);
+   ctx.bezierCurveTo(d.x+d.drift*2,d.y-d.trail*.48,d.x-d.drift*2,d.y-r*1.2,d.x,d.y-r*.3);
+   ctx.strokeStyle=tail;ctx.lineWidth=Math.max(.55,r*.36);ctx.lineCap='round';ctx.stroke();
+  }
+  const g=ctx.createRadialGradient(d.x-r*.34,d.y-r*.38,r*.05,d.x,d.y,r*1.6);
+  g.addColorStop(0,'rgba(255,255,255,'+(d.alpha*.98)+')');
+  g.addColorStop(.18,'rgba(231,245,253,'+(d.alpha*.78)+')');
+  g.addColorStop(.5,'rgba(175,211,232,'+(d.alpha*.4)+')');
+  g.addColorStop(.86,'rgba(72,112,143,'+(d.alpha*.18)+')');
+  g.addColorStop(1,'rgba(210,235,248,0)');
+  ctx.save();ctx.shadowColor='rgba(206,232,247,'+(d.alpha*.38)+')';ctx.shadowBlur=r*2;
+  ctx.beginPath();ctx.ellipse(d.x,d.y,r*.7,r*1.02,Math.sin(d.phase)*.1,0,Math.PI*2);
+  ctx.fillStyle=g;ctx.fill();ctx.restore();
+  ctx.beginPath();ctx.ellipse(d.x,d.y,r*.67,r,Math.sin(d.phase)*.1,0,Math.PI*2);
+  ctx.strokeStyle='rgba(241,250,255,'+(d.alpha*.44)+')';ctx.lineWidth=.5;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(d.x-r*.28,d.y-r*.43);
+  ctx.quadraticCurveTo(d.x-r*.03,d.y-r*.68,d.x+r*.18,d.y-r*.48);
+  ctx.strokeStyle='rgba(255,255,255,'+(d.alpha*.9)+')';ctx.lineWidth=Math.max(.45,r*.2);
+  ctx.lineCap='round';ctx.stroke();
+ }
+ function attach(canvas){
+  const ctx=canvas.getContext('2d',{alpha:true});
+  if(!ctx)return;
+  const stage=canvas.closest('.focusStage');
+  let w=0,h=0,dpr=1,last=0,raf=0,running=false,visible=false;
+  let state=makeState(600,400);
+  function paint(){
+   ctx.clearRect(0,0,w,h);
+   state.rivulets.forEach(d=>{
+    const grad=ctx.createLinearGradient(d.x,d.y,d.x,d.y+d.length);
+    grad.addColorStop(0,'rgba(217,238,250,0)');
+    grad.addColorStop(.18,'rgba(217,238,250,'+d.alpha+')');
+    grad.addColorStop(.82,'rgba(217,238,250,'+(d.alpha*.5)+')');
+    grad.addColorStop(1,'rgba(217,238,250,0)');
+    ctx.beginPath();ctx.moveTo(d.x,d.y);
+    ctx.bezierCurveTo(d.x+Math.sin(d.phase)*2,d.y+d.length*.34,d.x+Math.cos(d.phase)*2,d.y+d.length*.68,d.x+Math.sin(d.phase+1)*1.5,d.y+d.length);
+    ctx.strokeStyle=grad;ctx.lineWidth=d.width;ctx.lineCap='round';ctx.stroke();
+   });
+   state.micro.forEach(d=>drawMicro(ctx,d));
+   state.beads.forEach(d=>drawBead(ctx,d));
+  }
+  function resize(){
+   const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
+   const oldW=w,oldH=h;w=rect.width;h=rect.height;
+   dpr=Math.min(1.45,window.devicePixelRatio||1);
+   canvas.width=Math.max(1,Math.round(w*dpr));canvas.height=Math.max(1,Math.round(h*dpr));
+   ctx.setTransform(dpr,0,0,dpr,0,0);
+   if(oldW&&oldH){
+    const sx=w/oldW,sy=h/oldH;
+    state.micro.forEach(d=>{d.x*=sx;d.y*=sy;});
+    state.beads.forEach(d=>{d.x*=sx;d.y*=sy;});
+    state.rivulets.forEach(d=>{d.x*=sx;d.y*=sy;});
+   }else state=makeState(w,h);
+   paint();
+  }
+  function mergeBeads(){
+   for(let i=0;i<state.beads.length;i++){
+    const a=state.beads[i];if(!a.alive)continue;
+    for(let j=i+1;j<Math.min(state.beads.length,i+8);j++){
+     const b=state.beads[j];if(!b.alive)continue;
+     const dx=a.x-b.x,dy=a.y-b.y,dist=Math.hypot(dx,dy);
+     if(dist<(a.r+b.r)*.58&&Math.max(a.r,b.r)<4.4){
+      const total=a.r*a.r+b.r*b.r;
+      a.x=(a.x*a.r*a.r+b.x*b.r*b.r)/total;
+      a.y=(a.y*a.r*a.r+b.y*b.r*b.r)/total;
+      a.r=Math.min(6,Math.sqrt(total));a.alpha=Math.min(.5,Math.max(a.alpha,b.alpha)+.04);
+      a.speed=(a.speed+b.speed)*.5;a.trail=Math.min(54,Math.max(a.trail,b.trail)+5);
+      b.alive=false;
+     }
+    }
+   }
+   if(state.beads.filter(d=>d.alive).length<42){
+    state.beads.filter(d=>!d.alive).slice(0,10).forEach(d=>{
+     d.x=rand(0,w);d.y=rand(0,h);d.r=rand(1.2,3);d.alpha=rand(.18,.34);
+     d.speed=rand(2.2,8);d.drift=rand(-.3,.3);d.trail=rand(7,28);d.alive=true;
+    });
+   }
+  }
+  function frame(now){
+   if(!running)return;
+   if(document.hidden){stop();return;}
+   if(now-last>=34){
+    const dt=Math.min(.065,(now-last)/1000);last=now;
+    state.beads.forEach(d=>{
+     if(!d.alive)return;
+     d.y+=d.speed*dt;d.x+=d.drift*dt+Math.sin(now*.0005+d.phase)*.035;
+     d.phase+=dt*.17;
+     if(d.y>h+35){d.y=-d.trail-rand(0,24);d.x=rand(0,w);d.trail=rand(7,44);}
+    });
+    state.rivulets.forEach(d=>{
+     d.y+=d.speed*dt;
+     if(d.y>h+20){d.y=-d.length-rand(0,60);d.x=rand(0,w);}
+    });
+    if(Math.floor(now/1500)!==Math.floor((now-dt*1000)/1500))mergeBeads();
+    paint();
+   }
+   raf=requestAnimationFrame(frame);
+  }
+  function start(){if(running||!visible||document.hidden||reduced)return;running=true;last=performance.now();raf=requestAnimationFrame(frame);}
+  function stop(){running=false;if(raf)cancelAnimationFrame(raf);raf=0;}
+  const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(resize):null;
+  observer?.observe(canvas);
+  const intersection=typeof IntersectionObserver!=='undefined'?new IntersectionObserver(entries=>{
+   visible=!!(entries[0]&&entries[0].isIntersecting);
+   if(visible)start();else stop();
+  },{threshold:.01}):null;
+  intersection?.observe(stage||canvas);
+  if(!intersection){visible=true;start();}
+  resize();
+  if(reduced)paint();
+  instances.add({canvas,stop,observer,intersection});
+ }
+ function scan(){
+  document.querySelectorAll('canvas.focusGlassCanvas').forEach(canvas=>{
+   if(canvas.dataset.mfaAttached)return;
+   canvas.dataset.mfaAttached='yes';attach(canvas);
+  });
+  for(const item of instances)if(!item.canvas.isConnected){
+   item.stop();item.observer?.disconnect();item.intersection?.disconnect();instances.delete(item);
+  }
+ }
+ scan();
+ if(document.body){const mo=new MutationObserver(scan);mo.observe(document.body,{childList:true,subtree:true});}
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)instances.forEach(x=>x.stop());else scan();});
+ window.MINIK_AKADEMI_V28_GLASS_RAIN={version:'28.0',glassDroplets:true,merge:true,windowOnly:true};
 })();
 </script>
 
