@@ -567,7 +567,7 @@ body.mfa-night .progress{background:#253348!important}
   <div class="navBottom"><div class="navFlower">🌼</div><b>Minik adımlar…</b><small>Her gün biraz daha öğreniyoruz.</small></div>
 </aside>
 <div class="app" id="appShell">
-<header><div class="brand"><div class="logo">🌷</div><div><h1>Minik Akademi</h1><small>öğrenmenin tatlı hâli · TYT fizik ✨</small></div></div><div class="headerActions"><button type="button" class="accountBtn" id="accountButton" onclick="openAccount()">👤 Hesabım</button><div class="points">⭐ <span id="points">0</span> puan</div><div class="localSavePill" title="İlerlemen bu cihazda otomatik kaydedilir">✓ Bu cihazda kayıtlı</div></div></header>
+<header><div class="brand"><div class="logo">🌷</div><div><h1>Minik Akademi</h1><small>öğrenmenin tatlı hâli · TYT fizik ✨</small></div></div><div class="headerActions"><button type="button" class="accountBtn" id="accountButton" onclick="openAccount()">👤 Hesabım</button><button type="button" class="accountBtn mfaGuideLauncher" onclick="openMinikGuide()" aria-label="Minik Akademi kullanım rehberini aç"><span aria-hidden="true">🧭</span><span class="mfaGuideLauncherText">Rehber</span></button><div class="points">⭐ <span id="points">0</span> puan</div><div class="localSavePill" title="İlerlemen bu cihazda otomatik kaydedilir">✓ Bu cihazda kayıtlı</div></div></header>
 <div class="routePage" id="homePage"><section class="hero"><div><div class="eyebrow">Küçük adımlar, büyük keşifler</div><h2>Fizik gözünde büyümesin.<br>Birlikte çözeriz! 💗</h2><p>Önce mantığını anlayacağız, sonra formülleri öğreneceğiz. Acele yok, yarış yok. Her yanlış yeni bir ipucu.</p><button class="btn" onclick="showTab('lesson')">Derse devam et →</button></div><div class="heroart">🪐📚</div></section>
 <div class="stats"><div class="stat"><b id="completed">0/11</b><small>Tamamlanan konu</small></div><div class="stat"><b id="percent">0%</b><small>Genel ilerleme</small></div><div class="stat"><b id="solved">0</b><small>Çözülen soru</small></div><div class="stat"><b id="badge">🌱</b><small>Rozetin</small></div></div>
 <div class="layout"><aside class="panel sidebar"><h3>🗺️ Konu haritası</h3><div class="progress"><span id="bar"></span></div><div id="topicList"></div><p class="tiny">İstediğin konuyu seçebilir, dilediğin kadar tekrar edebilirsin. 🌼</p></aside>
@@ -3628,5 +3628,173 @@ body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusSky::after{
   body.mfa-focus-immersive .focusSky::after{transition:none!important}
 }
 </style>
+
+<style id="mfa-final-night-focus-below-contrast">
+/* Keep the lower Pomodoro summary legible when the automatic night palette is active. */
+body.mfa-night.mfa-focus-immersive .focusBelow,
+body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusBelow{color:#dbe4ef!important}
+body.mfa-night.mfa-focus-immersive .focusStatHead h3,
+body.mfa-night.mfa-focus-immersive .focusStatHead small,
+body.mfa-night.mfa-focus-immersive .focusGoalText,
+body.mfa-night.mfa-focus-immersive .focusGoalText b,
+body.mfa-night.mfa-focus-immersive .focusHistoryRow,
+body.mfa-night.mfa-focus-immersive .focusHistoryRow span,
+body.mfa-night.mfa-focus-immersive .focusHistoryRow b,
+body.mfa-night.mfa-focus-immersive .focusStatCard p,
+body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusStatHead h3,
+body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusStatHead small,
+body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusGoalText,
+body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusHistoryRow,
+body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusHistoryRow b,
+body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusHistoryRow span{color:#dbe4ef!important}
+body.mfa-night.mfa-focus-immersive .focusGoalLine,
+body.mfa-night:has(#extraPage:not([hidden]) .focusStage) .focusGoalLine{background:#28374d!important}
+</style>
+
+<style id="mfa-final-onboarding-guide">
+/* First-visit mini tour: accessible, responsive, and reusable from the header. */
+.mfaGuideLauncher{display:inline-flex;align-items:center;gap:6px}
+.mfaGuideLauncher>span:first-child{font-size:15px}
+#mfaWelcomeShade{
+ position:fixed;inset:0;z-index:10000;display:none;place-items:center;
+ padding:max(14px,env(safe-area-inset-top)) 15px max(14px,env(safe-area-inset-bottom));
+ background:rgba(31,25,42,.58);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);
+}
+#mfaWelcomeShade.open{display:grid}
+#mfaWelcomeCard{
+ position:relative;width:min(100%,590px);max-height:min(780px,92svh);overflow:auto;
+ border:1px solid rgba(255,255,255,.82);border-radius:28px;
+ background:linear-gradient(150deg,#fffdfd,#fff8fb 62%,#f8f6ff);
+ color:#584b65;box-shadow:0 28px 100px rgba(24,17,39,.34);
+}
+#mfaWelcomeHero{
+ position:relative;padding:25px 28px 20px;
+ background:linear-gradient(115deg,#ffe6ed 0%,#eee8ff 56%,#e7f7ee 100%);
+ border-bottom:1px solid #eee5f0;
+}
+#mfaWelcomeHero:after{content:"✦  ·  ✧  ·  ✦";position:absolute;right:24px;top:24px;color:#fff;font-size:16px;letter-spacing:5px}
+#mfaGuideClose{
+ position:absolute;z-index:2;right:14px;top:13px;width:34px;height:34px;border-radius:12px;
+ background:rgba(255,255,255,.72);border:1px solid rgba(111,91,127,.12);color:#655772;font-size:18px;
+}
+#mfaGuideKicker{display:flex;align-items:center;gap:9px;color:#87768f;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+#mfaGuideIcon{font-size:34px;line-height:1;filter:drop-shadow(0 5px 8px #9b7e9b22)}
+#mfaGuideTitle{margin:13px 0 5px;color:#51445f;font-size:clamp(23px,4vw,30px);line-height:1.12;letter-spacing:-.025em}
+#mfaGuideCount{font-size:11px;color:#8d8099;font-weight:850}
+#mfaGuideBody{padding:23px 28px 25px}
+#mfaGuideText{margin:0;color:#70647c;font-size:14px;line-height:1.75}
+#mfaGuideTip{
+ margin-top:17px;padding:13px 15px;border-radius:15px;
+ background:linear-gradient(110deg,#fff0f4,#f4f0ff);
+ color:#6d5b7c;font-size:12px;line-height:1.65;border:1px solid #f0e7f2;
+}
+#mfaGuideDots{display:flex;gap:7px;align-items:center;margin-top:20px}
+#mfaGuideDots span{height:6px;flex:1;border-radius:20px;background:#eee8f0;transition:background .2s,transform .2s}
+#mfaGuideDots span.active{background:linear-gradient(90deg,#e5a9bd,#b7a4df);transform:scaleY(1.3)}
+#mfaGuideFooter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:22px}
+#mfaGuideFooter .mfaGuideNav{display:flex;align-items:center;gap:8px}
+.mfaGuideAction{
+ border:1px solid #e9e0ec;border-radius:13px;padding:10px 15px;
+ background:#fff;color:#746581;font-size:12px;font-weight:850;cursor:pointer;
+}
+.mfaGuideAction.primary{border-color:transparent;background:linear-gradient(110deg,#e9c2d4,#d7c9f1);color:#51435f;box-shadow:0 7px 18px #b49ac322}
+.mfaGuideAction:focus-visible,#mfaGuideClose:focus-visible,.mfaGuideLauncher:focus-visible{outline:3px solid #a58aca;outline-offset:3px}
+body.mfa-guide-open{overflow:hidden!important}
+body.mfa-night #mfaWelcomeCard{background:linear-gradient(150deg,#121e30,#172338 65%,#1b2032);border-color:#39475c;color:#e4ebf4}
+body.mfa-night #mfaWelcomeHero{background:linear-gradient(115deg,#263044,#292940 56%,#20343a);border-color:#34445a}
+body.mfa-night #mfaGuideKicker,body.mfa-night #mfaGuideCount{color:#b4c0d0}
+body.mfa-night #mfaGuideTitle{color:#f0e8dc}
+body.mfa-night #mfaGuideText{color:#d1dbe7}
+body.mfa-night #mfaGuideTip{background:linear-gradient(110deg,#202d42,#29283d);border-color:#39445a;color:#e0d8e9}
+body.mfa-night #mfaGuideDots span{background:#344156}
+body.mfa-night #mfaGuideDots span.active{background:linear-gradient(90deg,#bd9d72,#b7a8d9)}
+body.mfa-night .mfaGuideAction{background:#1b2a40;border-color:#3c4a60;color:#dce5ef}
+body.mfa-night .mfaGuideAction.primary{background:linear-gradient(110deg,#806c83,#77749c);border-color:transparent;color:#fff}
+body.mfa-night #mfaGuideClose{background:#25334a;border-color:#43516a;color:#edf2f8}
+@media(max-width:650px){
+ .mfaGuideLauncher{padding:9px 11px!important;min-width:39px;justify-content:center}
+ .mfaGuideLauncherText{display:none}
+ #mfaWelcomeCard{border-radius:22px;max-height:90svh}
+ #mfaWelcomeHero{padding:22px 19px 17px}
+ #mfaWelcomeHero:after{right:18px;top:55px;font-size:12px;letter-spacing:3px}
+ #mfaGuideBody{padding:19px 19px 20px}
+ #mfaGuideTitle{font-size:24px;max-width:80%}
+ #mfaGuideText{font-size:13px;line-height:1.7}
+ #mfaGuideFooter{align-items:stretch;flex-direction:column-reverse}
+ #mfaGuideFooter .mfaGuideNav{justify-content:flex-end}
+ #mfaGuideFooter>.mfaGuideAction{align-self:flex-start}
+ .mfaGuideAction{padding:10px 13px}
+}
+@media(prefers-reduced-motion:reduce){
+ #mfaGuideDots span{transition:none}
+}
+</style>
+
+<script id="mfa-final-onboarding-guide-script">
+(function(){
+ 'use strict';
+ const KEY='mfa_minik_guide_seen_v1';
+ const steps=[
+  {icon:'📚',title:'Üç dersi tek yerden keşfet',text:'Sol menüden TYT Fizik, TYT Kimya veya TYT Biyoloji’yi seç. Her dersin konu haritası nereden başlayacağını gösterir; istediğin konuya dönüp tekrar yapabilirsin.',tip:'Küçük öneri: Önce bir konu seç, konu anlatımını bitir ve ardından kısa testle kendini dene.'},
+  {icon:'🧠',title:'Oku, çöz, tekrar et',text:'Bir konunun içinde Konu anlatımı, Testler, Tekrar kartları ve Yorum soruları sekmeleri var. Ders defterine kendi notlarını yazabilir, konu kontrol listesinden neleri öğrendiğini işaretleyebilirsin.',tip:'Bir soruda takılırsan acele etme. Açıklamayı inceleyip aynı soruya yeniden dön.'},
+  {icon:'🔬',title:'Deneyerek kavra',text:'Deney bölümünde değişkenleri değiştir, sonuçları ve grafikleri gözlemle. Deney rehberindeki tahminleri ve adımları tamamla; istersen farklı denemelerini kaydedip karşılaştır.',tip:'Önce tahmin et, sonra simülasyonu çalıştır. Böylece formülün ne anlattığını görerek öğrenirsin.'},
+  {icon:'🌧️',title:'Kendi çalışma odanı kur',text:'Ders Sayacı’nda Pomodoro veya serbest sayaç kullan. İstersen yağmur sesini aç, çalışma süreni takip et ve kahve kupasını makineye götürerek kahve hazırla.',tip:'Kısa bir hedef belirle; sayaç bitince mola vermeyi unutma.'},
+  {icon:'☁️',title:'İlerlemeni güvenle sakla',text:'İlerlemem ve Raporlarım bölümlerinden gelişimini izle; Ders defterim, Yanlış defterim ve Formül koleksiyonumdan tekrar yap. Hesabım’dan giriş yaptığında ders ilerlemen ve desteklenen deney/sayaç verilerin buluta eşitlenir. Misafir kullanımında kayıtların bu cihazda kalır.',tip:'Aynı hesaba başka bir cihazdan giriş yaptığında bulutta kayıtlı ilerlemeni yükleyebilirsin.'}
+ ];
+ let index=0,previousFocus=null,opened=false;
+ const root=document.createElement('div');
+ root.id='mfaWelcomeShade';
+ root.innerHTML='<section id="mfaWelcomeCard" role="dialog" aria-modal="true" aria-labelledby="mfaGuideTitle" aria-describedby="mfaGuideText"><div id="mfaWelcomeHero"><button id="mfaGuideClose" type="button" aria-label="Rehberi kapat" onclick="closeMinikGuide()">×</button><div id="mfaGuideKicker"><span id="mfaGuideIcon" aria-hidden="true">🌷</span><span>MINİK AKADEMİ · HIZLI REHBER</span></div><h2 id="mfaGuideTitle" tabindex="-1">Minik Akademi’ye hoş geldin!</h2><div id="mfaGuideCount" aria-live="polite">1 / 5</div></div><div id="mfaGuideBody"><p id="mfaGuideText" aria-live="polite"></p><div id="mfaGuideTip"></div><div id="mfaGuideDots" aria-hidden="true"></div><div id="mfaGuideFooter"><button class="mfaGuideAction" type="button" onclick="closeMinikGuide()">Rehberi kapat</button><div class="mfaGuideNav"><button class="mfaGuideAction" id="mfaGuideBack" type="button" onclick="minikGuideBack()">Geri</button><button class="mfaGuideAction primary" id="mfaGuideNext" type="button" onclick="minikGuideNext()">Sonraki →</button></div></div></div></section>';
+ document.body.appendChild(root);
+ const $=id=>document.getElementById(id);
+ function seen(){try{return localStorage.getItem(KEY)==='1';}catch(_){return false;}}
+ function markSeen(){try{localStorage.setItem(KEY,'1');}catch(_){}}
+ function render(){
+  const s=steps[index];
+  $('mfaGuideIcon').textContent=s.icon;
+  $('mfaGuideTitle').textContent=s.title;
+  $('mfaGuideText').textContent=s.text;
+  $('mfaGuideTip').textContent=s.tip;
+  $('mfaGuideCount').textContent=(index+1)+' / '+steps.length;
+  $('mfaGuideDots').innerHTML=steps.map((_,i)=>'<span class="'+(i===index?'active':'')+'"></span>').join('');
+  $('mfaGuideBack').hidden=index===0;
+  $('mfaGuideNext').textContent=index===steps.length-1?'Keşfe başla ✨':'Sonraki →';
+ }
+ function open(){
+  if(opened)return;
+  opened=true;index=0;previousFocus=document.activeElement;
+  render();root.classList.add('open');document.body.classList.add('mfa-guide-open');
+  requestAnimationFrame(()=>$('mfaGuideTitle').focus());
+ }
+ function close(){
+  if(!opened)return;
+  opened=false;root.classList.remove('open');document.body.classList.remove('mfa-guide-open');markSeen();
+  if(previousFocus&&typeof previousFocus.focus==='function'&&document.contains(previousFocus))previousFocus.focus();
+ }
+ window.openMinikGuide=open;
+ window.closeMinikGuide=close;
+ window.minikGuideNext=function(){if(!opened)return;if(index<steps.length-1){index++;render();$('mfaGuideTitle').focus();}else close();};
+ window.minikGuideBack=function(){if(!opened||index===0)return;index--;render();$('mfaGuideTitle').focus();};
+ root.addEventListener('click',e=>{if(e.target===root)close();});
+ document.addEventListener('keydown',e=>{
+  if(!opened)return;
+  if(e.key==='Escape'){e.preventDefault();close();return;}
+  if(e.key==='Tab'){
+   const items=[...root.querySelectorAll('button:not([hidden]):not([disabled])')];
+   if(!items.length)return;
+   const first=items[0],last=items[items.length-1];
+   if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+   else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+ });
+ window.MINIK_AKADEMI_GUIDE={version:'1.0',steps:steps.length,firstVisitOnly:true,reopenable:true};
+ if(!seen()){
+  window.setTimeout(()=>{
+   if(!seen()&&!$('accountShade')?.classList.contains('open'))open();
+  },900);
+ }
+})();
+</script>
+
 </body>
 </html>
