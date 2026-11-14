@@ -3542,5 +3542,37 @@ html body:has(#extraPage:not([hidden]) .focusStage) aside.sideNav#sideNav .navBo
 })();
 </script>
 
+
+<style id="mfa-v36-coffee-machine-visible">
+/* The photo now extends underneath the left navigation.
+   Keep the coffee station on the visible part of the desk, not beneath the opaque rail. */
+@media(min-width:1101px){
+ body.mfa-focus-immersive .focusCoffeeStation{
+  left:clamp(270px,22vw,350px)!important;
+  top:auto!important;
+  bottom:clamp(22px,4vh,42px)!important;
+  transform:scale(.82)!important;
+  transform-origin:bottom left!important;
+  z-index:12!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+ }
+}
+@media(max-width:1100px) and (min-width:651px){
+ body.mfa-focus-immersive .focusCoffeeStation{
+  left:clamp(225px,24vw,280px)!important;
+  top:auto!important;
+  bottom:20px!important;
+  transform:scale(.68)!important;
+  transform-origin:bottom left!important;
+  z-index:12!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+ }
+}
+</style>
+
 </body>
 </html>
