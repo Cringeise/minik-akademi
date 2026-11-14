@@ -545,11 +545,17 @@ body.mfa-focus-immersive{
   color:#e8edf4!important;
   overflow-x:hidden!important;
 }
-body.mfa-focus-immersive #appShell{display:none!important}
-body.mfa-focus-immersive #extraPage{
+body.mfa-focus-immersive #appShell{
   display:block!important;position:relative!important;
   width:calc(100% - 248px)!important;max-width:none!important;
   min-height:100svh!important;margin:0 0 0 248px!important;
+  padding:0!important;background:transparent!important;
+}
+body.mfa-focus-immersive #appShell>header{display:none!important}
+body.mfa-focus-immersive #extraPage{
+  display:block!important;position:relative!important;
+  width:100%!important;max-width:none!important;
+  min-height:100svh!important;margin:0!important;
   padding:0!important;background:transparent!important;
 }
 body.mfa-focus-immersive .footer{display:none!important}
@@ -647,9 +653,13 @@ body.mfa-focus-immersive .focusStage .focusRainDrop{opacity:.7}
   body.mfa-focus-immersive .focusPanel{padding:20px!important}
 }
 @media(max-width:650px){
+  body.mfa-focus-immersive #appShell{
+    width:100%!important;max-width:none!important;margin:0!important;
+    min-height:100svh!important;padding:0 0 calc(116px + env(safe-area-inset-bottom))!important;
+  }
   body.mfa-focus-immersive #extraPage{
     width:100%!important;margin:0!important;min-height:100svh!important;
-    padding:0 0 calc(116px + env(safe-area-inset-bottom))!important;
+    padding:0!important;
   }
   body.mfa-focus-immersive .sideNav#sideNav{
     background:rgba(7,14,25,.30)!important;
