@@ -815,7 +815,7 @@ function escapeAcademyText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp
       return `<div class="pageHead"><div><div class="pageEyebrow">KÜÇÜK BAŞARILAR</div><h2>Rozetlerim 🏅</h2><p>Rozetler yarışmak için değil, attığın adımları fark etmek için.</p></div></div><div class="pageGrid">${badges.map(b=>`<div class="pageCard" style="opacity:${b[3]?1:.62}"><div style="font-size:35px">${b[0]}</div><b>${b[1]}</b><small style="display:block;color:#95899e;margin-top:5px">${b[2]}</small><span class="badgeState" style="display:inline-block;margin-top:9px;padding:5px 8px;border-radius:9px;background:${b[3]?'#edf8f0':'#f7f3f8'};color:${b[3]?'#63886e':'#9a8fa2'};font-size:10px">${b[3]?'Kazandın ✓':'Henüz değil'}</span></div>`).join('')}</div>`;
     }
     if(page==='focus'){
-      return `<div class="pageHead"><div><div class="pageEyebrow">SAKİN ÇALIŞMA ALANI</div><h2>Odaklanma köşem 🍵</h2><p>Bildirimlerden uzak, kısa ve rahat bir çalışma aralığı.</p></div></div><div class="pageCard" style="max-width:620px;margin:auto;text-align:center"><div class="focusClock" id="focusClock">25:00</div><p class="intro">25 dakika çalış, sonra kendine kısa bir mola ver. Süreyi istediğin an durdurabilirsin.</p><div class="focusControls"><button class="btn" id="focusStart" onclick="startFocus()">Başlat</button><button class="btn secondary" onclick="pauseFocus()">Duraklat</button><button class="btn secondary" onclick="resetFocus()">Sıfırla</button></div><p class="tiny" id="focusMessage" style="margin-top:15px">Kendine uygun bir konu seç ve başlayınca süreyi başlat.</p></div>`;
+      return `<div class="pageHead"><div><div class="pageEyebrow">SAKİN ÇALIŞMA ALANI</div><h2>Odaklanma köşem 🍵</h2><p>Bildirimlerden uzak, kısa ve rahat bir çalışma aralığı.</p></div></div><div class="pageCard" style="max-width:620px;margin:auto;text-align:center"><div class="focusClock" id="focusClockLegacy">25:00</div><p class="intro">25 dakika çalış, sonra kendine kısa bir mola ver. Süreyi istediğin an durdurabilirsin.</p><div class="focusControls"><button class="btn" id="focusStart" onclick="startFocus()">Başlat</button><button class="btn secondary" onclick="pauseFocus()">Duraklat</button><button class="btn secondary" onclick="resetFocus()">Sıfırla</button></div><p class="tiny" id="focusMessage" style="margin-top:15px">Kendine uygun bir konu seç ve başlayınca süreyi başlat.</p></div>`;
     }
     return previousContent?previousContent(page):'';
   };
@@ -837,7 +837,7 @@ function escapeAcademyText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp
   };
 
   // A gentle 25-minute focus clock. It is not a screen lock and can be paused any time.
-  function paintFocus(){const el=$('focusClock');if(el){const mm=String(Math.floor(focusSeconds/60)).padStart(2,'0'),ss=String(focusSeconds%60).padStart(2,'0');el.textContent=mm+':'+ss;}}
+  function paintFocus(){const el=$('focusClockLegacy');if(el){const mm=String(Math.floor(focusSeconds/60)).padStart(2,'0'),ss=String(focusSeconds%60).padStart(2,'0');el.textContent=mm+':'+ss;}}
   window.startFocus=function(){if(focusInterval)return;focusStartedAt=Date.now();const m=$('focusMessage');if(m)m.textContent='Harika! Sadece kendi hızında ilerle. 🌷';focusInterval=setInterval(()=>{focusSeconds=Math.max(0,focusSeconds-1);paintFocus();if(focusSeconds===0){window.pauseFocus();const el=$('focusMessage');if(el)el.textContent='Odak süren tamamlandı. Güzel bir mola ver! 🌼';}},1000);};
   window.pauseFocus=function(){if(focusInterval){clearInterval(focusInterval);focusInterval=null;}const m=$('focusMessage');if(m)m.textContent='Süre duraklatıldı. Hazır olduğunda devam edebilirsin.';};
   window.resetFocus=function(){window.pauseFocus();focusSeconds=25*60;paintFocus();const m=$('focusMessage');if(m)m.textContent='Yeni bir sakin çalışma aralığına hazırsın.';};
@@ -1210,7 +1210,7 @@ function escapeAcademyText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp
 
 
 
-<style id="topic-lab-integration-v7">
+<style id="topic-lab-integration-v7-style">
 .topicLabPanel{margin:18px 0 20px;padding:18px;border:1px solid #eadff0;border-radius:22px;background:linear-gradient(135deg,#fff9fc 0%,#f8f5ff 58%,#f3faf4 100%);box-shadow:0 8px 22px rgba(116,91,132,.06);color:#5e536b;}
 .topicLabTop{display:flex;align-items:flex-start;gap:12px;margin-bottom:13px}.topicLabIcon{width:43px;height:43px;flex:0 0 43px;display:grid;place-items:center;border-radius:15px;background:#fff;font-size:23px;box-shadow:0 3px 10px rgba(109,89,125,.08)}
 .topicLabKicker{font-size:9px;letter-spacing:.12em;font-weight:900;color:#aa8ab4}.topicLabTop h3{margin:3px 0 4px;font-size:17px;color:#665471}.topicLabTop p{margin:0;font-size:12px;line-height:1.55;color:#82758c}
@@ -1218,7 +1218,7 @@ function escapeAcademyText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp
 @media(max-width:720px){.topicLabPanel{padding:14px;border-radius:18px}.topicLabGrid{grid-template-columns:1fr}.topicLabTop h3{font-size:15px}.topicLabMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.topicLabActions{align-items:stretch}.topicLabActions button{flex:1 1 100%}}
 </style>
 
-<script id="topic-lab-integration-v7">
+<script id="topic-lab-integration-v7-script">
 (function(){
   const configs = [
     {icon:'📏',title:'Ölçüm ve birim dönüştürme',intro:'Bir ölçümü farklı birimlerle yazmayı dene. Sayı değişse de ölçülen uzunluk aynı kalır.',formula:'1 km = 1000 m',fields:[['distance','Ölçülen mesafe',0.5,5,0.1,2.4,'km']],
