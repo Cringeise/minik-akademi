@@ -3312,7 +3312,13 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
  function fmtDate(value){if(!value)return 'Henüz yok';const d=new Date(value);return Number.isNaN(d.getTime())?'—':d.toLocaleString('tr-TR',{dateStyle:'medium',timeStyle:'short'});}
  async function openAdminPanel(){
   if(!mfaClient||!mfaUser||String(mfaUser.email||'').toLowerCase()!=='ebrarzakirsag@gmail.com'){alert('Bu alan yalnızca tanımlı yönetici hesabına açıktır.');return;}
-  try{const refreshed=await mfaClient.auth.refreshSession();if(refreshed?.data?.session)mfaUser=refreshed.data.session.user;}catch(refreshError){console.warn('Admin session refresh:',refreshError);}
+  try{
+   const refreshed=await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error('Oturum yenileme 8 saniyede tamamlanmadı.')),8000);
+    Promise.resolve(mfaClient.auth.refreshSession()).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
+   });
+   if(refreshed?.data?.session)mfaUser=refreshed.data.session.user;
+  }catch(refreshError){console.warn('Admin session refresh:',refreshError);}
   
   currentPage='other';track('other');
   document.getElementById('homePage').hidden=true;
@@ -3323,20 +3329,43 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
  async function refreshAdminPanel(){
   const metrics=document.getElementById('mfaAdminMetrics'),body=document.getElementById('mfaAdminRows');
   if(!metrics||!body)return;
-  metrics.innerHTML='<div class="adminMetric">Veriler yenileniyor…</div>';
-  const {data,error}=await mfaClient.rpc('admin_get_user_usage');
-  if(error){metrics.innerHTML='<div class="adminMetric">Yönetici verisi alınamadı.</div>';body.innerHTML='<tr><td colspan="7">'+esc(error.message)+'</td></tr>';return;}
-  const rows=Array.isArray(data)?data:[];
-  const total=rows.reduce((a,r)=>a+(Number(r.total_seconds)||0),0);
-  const active=rows.filter(r=>r.last_active&&Date.now()-new Date(r.last_active).getTime()<7*86400000).length;
-  metrics.innerHTML='<div class="adminMetric"><small>KAYITLI HESAP</small><b>'+rows.length+'</b><small>Toplam kullanıcı</small></div><div class="adminMetric"><small>SON 7 GÜNDE AKTİF</small><b>'+active+'</b><small>Son etkinliği olan hesap</small></div><div class="adminMetric"><small>TOPLAM ÇALIŞMA SÜRESİ</small><b>'+fmtDuration(total)+'</b><small>Ölçülen yaklaşık süre</small></div>';
-  if(!rows.length){body.innerHTML='<tr><td colspan="7">Henüz kayıtlı kullanıcı yok.</td></tr>';return;}
-  body.innerHTML=rows.map(r=>{
-   const pages=Object.entries(r.page_counts||{}).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,3).map(([k,v])=>(pageNames[k]||'Diğer')+' ('+Number(v)+')').join(', ')||'Henüz ölçüm yok';
-   return '<tr><td>'+esc(r.email||'E-posta yok')+'</td><td>'+fmtDate(r.created_at)+'</td><td>'+fmtDate(r.last_sign_in_at)+'</td><td><b>'+fmtDuration(r.total_seconds)+'</b></td><td>'+Number(r.session_count||0)+'</td><td>'+fmtDate(r.last_active)+'</td><td>'+esc(pages)+'</td></tr>';
-  }).join('');
- }
- window.openAdminPanel=openAdminPanel;
+  const showError=(message)=>{
+   const safe=esc(String(message||'Bilinmeyen hata').slice(0,500));
+   metrics.innerHTML='<div class="adminMetric"><small>VERİ DURUMU</small><b>Yüklenemedi</b><small>Bağlantıyı kontrol edip yeniden deneyebilirsin.</small></div>';
+   body.innerHTML='<tr><td colspan="7" class="mfaAdminError">'+safe+'<br><button class="btn secondary" type="button" onclick="refreshAdminPanel()" style="margin-top:9px">↻ Tekrar dene</button></td></tr>';
+  };
+  metrics.innerHTML='<div class="adminMetric"><small>VERİ DURUMU</small><b>Yükleniyor…</b><small>Sunucudan güvenli kullanım özeti alınıyor</small></div>';
+  body.innerHTML='<tr><td colspan="7">Sunucudan yanıt bekleniyor…</td></tr>';
+  if(!mfaClient){showError('Supabase bağlantısı başlatılamadı. Sayfayı yenileyip tekrar dene.');return;}
+  let timer=null;
+  try{
+   const result=await Promise.race([
+    mfaClient.rpc('admin_get_user_usage'),
+    new Promise((resolve)=>{timer=setTimeout(()=>resolve({data:null,error:{message:'Sunucu 15 saniye içinde yanıt vermedi. Yeniden deneyebilirsin.'}}),15000);})
+   ]);
+   if(timer)clearTimeout(timer);
+   const {data,error}=result||{};
+   if(error){
+    console.error('Admin usage RPC failed:',error);
+    showError([error.message,error.code?'Kod: '+error.code:'',error.hint?'İpucu: '+error.hint:''].filter(Boolean).join(' · '));
+    return;
+   }
+   if(!Array.isArray(data)){showError('Sunucudan beklenmeyen veri biçimi döndü.');return;}
+   const rows=data;
+   const total=rows.reduce((a,r)=>a+(Number(r.total_seconds)||0),0);
+   const active=rows.filter(r=>r.last_active&&Date.now()-new Date(r.last_active).getTime()<7*86400000).length;
+   metrics.innerHTML='<div class="adminMetric"><small>KAYITLI HESAP</small><b>'+rows.length+'</b><small>Toplam kullanıcı</small></div><div class="adminMetric"><small>SON 7 GÜNDE AKTİF</small><b>'+active+'</b><small>Son etkinliği olan hesap</small></div><div class="adminMetric"><small>TOPLAM ÇALIŞMA SÜRESİ</small><b>'+fmtDuration(total)+'</b><small>Ölçülen yaklaşık süre</small></div>';
+   if(!rows.length){body.innerHTML='<tr><td colspan="7">Henüz kayıtlı kullanıcı yok.</td></tr>';return;}
+   body.innerHTML=rows.map(r=>{
+    const pages=Object.entries(r.page_counts||{}).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,3).map(([k,v])=>(pageNames[k]||'Diğer')+' ('+Number(v)+')').join(', ')||'Henüz ölçüm yok';
+    return '<tr><td>'+esc(r.email||'E-posta yok')+'</td><td>'+fmtDate(r.created_at)+'</td><td>'+fmtDate(r.last_sign_in_at)+'</td><td><b>'+fmtDuration(r.total_seconds)+'</b></td><td>'+Number(r.session_count||0)+'</td><td>'+fmtDate(r.last_active)+'</td><td>'+esc(pages)+'</td></tr>';
+   }).join('');
+  }catch(error){
+   if(timer)clearTimeout(timer);
+   console.error('Admin panel load failed:',error);
+   showError(error?.message||'Yönetim verileri alınırken beklenmeyen bir hata oluştu.');
+  }
+ } window.openAdminPanel=openAdminPanel;
  window.refreshAdminPanel=refreshAdminPanel;
  window.MINIK_AKADEMI_V27={roomRain:'outside-window-only',usageTracking:'minute-heartbeat',adminRpc:'admin_get_user_usage'};
  // Refresh the JWT once so the newly assigned app_metadata role appears without requiring a manual re-login.
@@ -3618,6 +3647,74 @@ body.mfa-night #mfaAdminButton{background:#172235!important;color:#f5e7ca!import
  window.MINIK_AKADEMI_V28_GLASS_RAIN={version:'28.0',glassDroplets:true,merge:true,windowOnly:true};
 })();
 </script>
+
+
+<style id="mfa-v29-focus-background-and-modal-fix">
+/* Hard fallback for the immersive Pomodoro scene, even if a photo layer fails to load. */
+body.mfa-focus-immersive{
+  min-height:100vh!important;background:#081321!important;color:#e8edf4!important;
+}
+body.mfa-focus-immersive #appShell,
+body.mfa-focus-immersive #extraPage,
+body.mfa-focus-immersive .routePage,
+body.mfa-focus-immersive .focusPage{
+  background:transparent!important;color:#edf2f8!important;
+}
+body.mfa-focus-immersive #extraPage{min-height:100svh!important;}
+body.mfa-focus-immersive .focusStage{
+  position:relative!important;isolation:isolate!important;
+  background-color:#091321!important;
+}
+body.mfa-focus-immersive .focusSky{
+  display:block!important;position:absolute!important;inset:0!important;
+  background-color:#0a1522!important;opacity:1!important;
+}
+body.mfa-focus-immersive .focusSky::before{
+  display:block!important;background-color:#0a1522!important;
+  background-position:center center!important;background-size:cover!important;
+  opacity:1!important;
+}
+
+/* The login/account dialog uses one consistent dark palette in night mode. */
+body.mfa-night #accountShade .accountModal{
+  background:linear-gradient(145deg,#121e2e,#0e1826)!important;
+  color:#dce6f1!important;border:1px solid #334258!important;
+}
+body.mfa-night #accountShade .accountModal h2,
+body.mfa-night #accountShade .accountModal label,
+body.mfa-night #accountShade .accountModal strong,
+body.mfa-night #accountShade .accountModal b{color:#e7edf6!important}
+body.mfa-night #accountShade .accountModal p,
+body.mfa-night #accountShade .accountModal .tiny{color:#9eacbe!important}
+body.mfa-night #accountShade .accountModal #authForms,
+body.mfa-night #accountShade .accountModal #signedIn,
+body.mfa-night #accountShade .accountModal #mfaRecoveryForm,
+body.mfa-night #accountShade .accountModal .modalActions{
+  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+}
+body.mfa-night #accountShade .accountModal .mfaUsageDisclosure,
+body.mfa-night #accountShade .accountModal .daily,
+body.mfa-night #accountShade .accountModal .authMsg{
+  background:#1a293d!important;color:#cbd7e5!important;
+  border:1px solid #34465e!important;border-radius:12px!important;
+}
+body.mfa-night #accountShade .accountModal input{
+  background:#0a1422!important;color:#e5edf6!important;
+  border:1px solid #3a4b63!important;caret-color:#e9c994!important;
+}
+body.mfa-night #accountShade .accountModal input::placeholder{color:#8293a8!important}
+body.mfa-night #accountShade .accountModal .accountBtn,
+body.mfa-night #accountShade .accountModal .btn.secondary{
+  background:#1b2a40!important;color:#dce6f1!important;
+  border:1px solid #3a4b63!important;box-shadow:none!important;
+}
+body.mfa-night #accountShade .accountModal .btn:not(.secondary){
+  background:#7966a7!important;color:#fff!important;
+}
+body.mfa-night #accountShade .accountModal a{color:#cfbff5!important}
+body.mfa-night #mfaAdminButton{background:#172235!important;color:#f5e7ca!important;border-color:#596078!important}
+body.mfa-night #mfaAdminRows .mfaAdminError{color:#f0c4ca!important;line-height:1.6}
+</style>
 
 </body>
 </html>
