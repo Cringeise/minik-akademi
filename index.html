@@ -3821,5 +3821,73 @@ body.mfa-focus-surface-lock #extraPage .focusCoffeeStation{
 })();
 </script>
 
+
+<style id="mfa-v31-focus-overlay-transparency">
+/* Clear the opaque content sheet over the rainy background. */
+html body.mfa-focus-immersive #extraPage .focusOverlay,
+html body.mfa-focus-surface-lock #extraPage .focusOverlay,
+html body.mfa-focus-immersive #extraPage .focusPanel,
+html body.mfa-focus-surface-lock #extraPage .focusPanel,
+html body #extraPage .focusPage .focusOverlay,
+html body #extraPage .focusPage .focusPanel{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html body #extraPage .focusPage .focusOverlay:before,
+html body #extraPage .focusPage .focusOverlay:after,
+html body #extraPage .focusPage .focusPanel:before,
+html body #extraPage .focusPage .focusPanel:after{
+  background:transparent!important;
+  box-shadow:none!important;
+  opacity:0!important;
+  content:none!important;
+  display:none!important;
+}
+</style>
+<script id="mfa-v31-focus-overlay-transparency-script">
+(function(){
+ 'use strict';
+ function clearOpaqueFocusLayer(){
+  const extra=document.getElementById('extraPage');
+  if(!extra)return;
+  const page=extra.querySelector('.focusPage');
+  if(!page)return;
+  [extra,page,page.querySelector('.focusOverlay'),page.querySelector('.focusPanel')].filter(Boolean).forEach(el=>{
+   el.style.setProperty('background','transparent','important');
+   el.style.setProperty('background-color','transparent','important');
+   el.style.setProperty('background-image','none','important');
+   el.style.setProperty('box-shadow','none','important');
+   el.style.setProperty('-webkit-backdrop-filter','none','important');
+   el.style.setProperty('backdrop-filter','none','important');
+  });
+  const stage=page.querySelector('.focusStage');
+  if(stage){
+   stage.style.setProperty('background-color','#091321','important');
+   stage.style.setProperty('background-image','linear-gradient(180deg,#17243a 0%,#263c55 52%,#101a29 100%)','important');
+  }
+ }
+ const oldGo=window.goPage;
+ if(typeof oldGo==='function'){
+  window.goPage=function(page){
+   const result=oldGo.apply(this,arguments);
+   requestAnimationFrame(clearOpaqueFocusLayer);
+   setTimeout(clearOpaqueFocusLayer,80);
+   return result;
+  };
+ }
+ clearOpaqueFocusLayer();
+ const extra=document.getElementById('extraPage');
+ if(extra&&typeof MutationObserver!=='undefined'){
+  new MutationObserver(clearOpaqueFocusLayer).observe(extra,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class','style']});
+ }
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)clearOpaqueFocusLayer();});
+ window.MINIK_AKADEMI_V31={focusOverlayTransparent:true,version:'31.0'};
+})();
+</script>
+
 </body>
 </html>
