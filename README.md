@@ -1,4 +1,4 @@
-# Minik Akademi v17
+# Minik Akademi v18
 
 Pastel tasarımlı, telefon ve masaüstü uyumlu TYT fen öğrenme platformu. Ana uygulama tek bir `index.html` dosyasıyla çalışır; ek sunucu veya ücretli ön yüz servisi gerektirmez.
 
@@ -10,15 +10,17 @@ Pastel tasarımlı, telefon ve masaüstü uyumlu TYT fen öğrenme platformu. An
 | TYT Kimya | 7 | 280 | 28 | 4 dijital model |
 | TYT Biyoloji | 8 | 320 | 32 | 6 dijital model |
 
-Her konuda dört ayrı test ve toplam 40 soru bulunur. Fizik bankası v17'de baştan düzenlendi; 11 konuda 440 farklı soru kökü vardır. Testler açıklamalı geri bildirim, cevap kaydı ve konu tamamlama akışıyla çalışır.
+Fizik bankası v17'de baştan düzenlendi; 11 konuda 440 farklı soru kökü vardır. Her konuda dört ayrı test ve toplam 40 soru bulunur.
 
-## Ders Sayacı
+## Lo-Fi Ders Sayacı
 
-- Yağmurlu Lo-Fi manzaralı, animasyonlu ayrı odak sayfası.
+- Yağmurlu, pencereli gece manzarası; şehir ışıkları, hareketli yağmur, sıcak masa lambası, kitaplar ve çalışma masası detayları.
+- Dairesel Pomodoro göstergesi ve tur sayacı.
 - Pomodoro çalışma ve mola döngüsü; dördüncü turun ardından uzun mola.
 - Serbest kronometre, oturum kaydı, ders ve günlük hedef seçimi.
+- Sayaç çalışırken tüm uygulama koyu gece temasına geçer; duraklatıldığında veya oturum bitirildiğinde normal tema geri gelir.
 - Günlük toplam ve son yedi günün çalışma geçmişi.
-- Kayıtlar cihazda saklanır; hesap senkronizasyonu etkinse mevcut Supabase hesap verisine de eklenir.
+- Oturum kayıtları cihazda saklanır; hesap senkronizasyonu etkinse mevcut Supabase hesap verisine de eklenir.
 
 ## Çıkmış Sorular ve MEB kaynakları
 
