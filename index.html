@@ -3160,5 +3160,152 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
   };
 })();
 </script>
+
+<style id="mfa-v26-window-glass-rain-style">
+/* v26 — a delicate layer of water droplets on the window glass */
+body.mfa-focus-immersive .focusStage .focusSky{z-index:1!important}
+.focusStage .focusGlassRainCanvas{
+  position:absolute!important;inset:0!important;display:block!important;
+  width:100%!important;height:100%!important;pointer-events:none!important;
+  z-index:4!important;opacity:.82!important;mix-blend-mode:screen!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .focusStage .focusGlassRainCanvas{opacity:.68!important}
+}
+</style>
+<script id="mfa-v26-window-glass-rain">
+(function(){
+ 'use strict';
+ const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+ const instances=new Set();
+ function random(min,max){return min+Math.random()*(max-min);}
+ function makeDrops(w,h){
+  const count=Math.min(108,Math.max(28,Math.round(w*h/13200)));
+  return Array.from({length:count},()=>({
+   x:random(0,w),y:random(0,h),r:random(1.05,3.7),
+   speed:reduced?0:random(1.2,8.5),drift:random(-1.5,1.5),
+   trail:random(7,34),alpha:random(.12,.32),
+   phase:random(0,Math.PI*2),stationary:Math.random()<.19
+  }));
+ }
+ function attach(stage){
+  const sky=stage.querySelector('.focusSky');
+  if(!sky||sky.querySelector('.focusGlassRainCanvas'))return;
+  const canvas=document.createElement('canvas');
+  canvas.className='focusGlassRainCanvas';
+  canvas.setAttribute('aria-hidden','true');
+  canvas.setAttribute('role','presentation');
+  sky.appendChild(canvas);
+  const ctx=canvas.getContext('2d',{alpha:true});
+  if(!ctx){canvas.remove();return;}
+  let w=0,h=0,dpr=1,drops=[],raf=0,last=0,running=false,visible=false;
+  function paint(){
+   ctx.clearRect(0,0,w,h);
+   for(const d of drops){
+    const r=d.r;
+    if(d.trail>r*2.6){
+     const streak=ctx.createLinearGradient(d.x,d.y-d.trail,d.x+d.drift*1.8,d.y-r*.55);
+     streak.addColorStop(0,'rgba(205,230,245,0)');
+     streak.addColorStop(.72,'rgba(205,230,245,'+(d.alpha*.20)+')');
+     streak.addColorStop(1,'rgba(238,248,255,'+(d.alpha*.62)+')');
+     ctx.beginPath();ctx.moveTo(d.x,d.y-d.trail);
+     ctx.quadraticCurveTo(d.x+d.drift*2,d.y-d.trail*.42,d.x+d.drift,d.y-r*.55);
+     ctx.strokeStyle=streak;ctx.lineWidth=Math.max(.55,r*.34);ctx.lineCap='round';ctx.stroke();
+    }
+    const glow=ctx.createRadialGradient(d.x-r*.28,d.y-r*.42,r*.08,d.x,d.y,r*1.75);
+    glow.addColorStop(0,'rgba(255,255,255,'+(d.alpha*.95)+')');
+    glow.addColorStop(.23,'rgba(224,241,250,'+(d.alpha*.55)+')');
+    glow.addColorStop(.66,'rgba(143,188,211,'+(d.alpha*.24)+')');
+    glow.addColorStop(1,'rgba(190,224,240,0)');
+    ctx.beginPath();ctx.ellipse(d.x,d.y,r*.62,r*1.04,Math.sin(d.phase)*.11,0,Math.PI*2);
+    ctx.fillStyle=glow;ctx.fill();
+    ctx.beginPath();ctx.ellipse(d.x,d.y,r*.61,r*1.02,Math.sin(d.phase)*.11,0,Math.PI*2);
+    ctx.strokeStyle='rgba(239,249,255,'+(d.alpha*.62)+')';ctx.lineWidth=.55;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(d.x-r*.28,d.y-r*.35);
+    ctx.quadraticCurveTo(d.x-r*.06,d.y-r*.66,d.x+r*.19,d.y-r*.47);
+    ctx.strokeStyle='rgba(255,255,255,'+(d.alpha*.82)+')';ctx.lineWidth=Math.max(.45,r*.16);
+    ctx.lineCap='round';ctx.stroke();
+   }
+  }
+  function resize(){
+   const rect=stage.getBoundingClientRect();
+   if(!rect.width||!rect.height)return;
+   const oldW=w,oldH=h;w=rect.width;h=rect.height;
+   dpr=Math.min(1.5,window.devicePixelRatio||1);
+   canvas.width=Math.max(1,Math.round(w*dpr));
+   canvas.height=Math.max(1,Math.round(h*dpr));
+   ctx.setTransform(dpr,0,0,dpr,0,0);
+   if(oldW&&oldH){
+    const sx=w/oldW,sy=h/oldH;
+    drops.forEach(d=>{d.x*=sx;d.y*=sy;});
+   }else drops=makeDrops(w,h);
+   paint();
+  }
+  function frame(now){
+   if(!running)return;
+   if(document.hidden){stop();return;}
+   if(now-last>=32){
+    const dt=Math.min(.07,(now-last)/1000);last=now;
+    for(const d of drops){
+     if(d.stationary||!d.speed)continue;
+     d.y+=d.speed*dt;d.x+=d.drift*dt+Math.sin(now*.00045+d.phase)*.14;
+     if(d.y>h+d.r*2){d.y=-d.trail-random(0,35);d.x=random(0,w);d.trail=random(7,34);}
+     if(d.x<-8)d.x=w+6;if(d.x>w+8)d.x=-6;
+    }
+    paint();
+   }
+   raf=requestAnimationFrame(frame);
+  }
+  function start(){
+   if(running||!visible||document.hidden||reduced)return;
+   running=true;last=performance.now();raf=requestAnimationFrame(frame);
+  }
+  function stop(){
+   running=false;if(raf)cancelAnimationFrame(raf);raf=0;
+  }
+  const instance={stage,start,stop,resize,setVisible(value){visible=value;if(value)start();else stop();}};
+  instances.add(instance);
+  resize();
+  if(typeof ResizeObserver!=='undefined'){
+   const ro=new ResizeObserver(resize);ro.observe(stage);instance.ro=ro;
+  }else window.addEventListener('resize',resize,{passive:true});
+  if(typeof IntersectionObserver!=='undefined'){
+   const io=new IntersectionObserver(entries=>{
+    const entry=entries[0];instance.setVisible(!!(entry&&entry.isIntersecting));
+   },{threshold:.01});
+   io.observe(stage);instance.io=io;
+  }else{
+   const rect=stage.getBoundingClientRect();
+   instance.setVisible(rect.bottom>0&&rect.top<window.innerHeight);
+  }
+  if(reduced)paint();
+ }
+ function scan(){
+  document.querySelectorAll('.focusStage').forEach(stage=>{
+   if(!stage.dataset.mfaGlassRain){stage.dataset.mfaGlassRain='ready';attach(stage);}
+  });
+  for(const item of instances){
+   if(!item.stage.isConnected){
+    item.stop();item.ro?.disconnect();item.io?.disconnect();instances.delete(item);
+   }
+  }
+ }
+ scan();
+ if(document.body){
+  const observer=new MutationObserver(scan);
+  observer.observe(document.body,{childList:true,subtree:true});
+ }
+ document.addEventListener('visibilitychange',()=>{
+  for(const item of instances){
+   if(document.hidden)item.stop();
+   else if(item.stage.getBoundingClientRect().bottom>0&&item.stage.getBoundingClientRect().top<window.innerHeight){
+    item.setVisible(true);
+   }
+  }
+ });
+ window.MINIK_AKADEMI_V26_GLASS_RAIN={version:'26.0',canvasDroplets:true,reducedMotionSupported:true};
+})();
+</script>
+
 </body>
 </html>
