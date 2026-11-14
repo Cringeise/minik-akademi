@@ -586,6 +586,57 @@ body.mfa-night .app .motionGraphCard svg circle[id$="-dot"]{
   stroke-width:1.5;
 }
 </style>
+<style id="mfa-motion-track-axis-night-contrast">
+/* Make the car's negative/positive position axis visible in dark mode. */
+body.mfa-night .app .motionTrackVisual{
+  background:linear-gradient(145deg,#111b2a 0%,#17253a 100%)!important;
+  border-color:#34445e!important;
+  color:#e4ebf5!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.22)!important;
+}
+body.mfa-night .app .motionTrackVisual .motionVisualTitle b{
+  color:#eadfff!important;
+}
+body.mfa-night .app .motionTrackVisual .motionVisualTitle small{
+  color:#b6c4d8!important;
+}
+body.mfa-night .app .motionTrackVisual .labTrack{
+  background:transparent!important;
+}
+body.mfa-night .app .motionTrackVisual .labTrackLine{
+  height:4px!important;
+  top:40px!important;
+  background:linear-gradient(90deg,#f0a9cf 0%,#bba4f1 50%,#f2c878 100%)!important;
+  box-shadow:0 0 10px rgba(187,164,241,.4);
+}
+body.mfa-night .app .motionTrackVisual .labTrackLine::before,
+body.mfa-night .app .motionTrackVisual .labTrackLine::after{
+  content:"";
+  position:absolute;
+  top:-4px;
+  width:11px;
+  height:12px;
+}
+body.mfa-night .app .motionTrackVisual .labTrackLine::before{
+  left:-2px;
+  background:#f0a9cf;
+  clip-path:polygon(100% 0,100% 100%,0 50%);
+}
+body.mfa-night .app .motionTrackVisual .labTrackLine::after{
+  right:-2px;
+  background:#f2c878;
+  clip-path:polygon(0 0,100% 50%,0 100%);
+}
+body.mfa-night .app .motionTrackVisual .labTrackZero{
+  border-left:2px dashed #ffe09a!important;
+  height:36px!important;
+}
+body.mfa-night .app .motionTrackVisual .labTrackLabels{
+  color:#d2dced!important;
+  font-weight:800;
+  text-shadow:0 1px 3px rgba(0,0,0,.65);
+}
+</style>
 </head><body>
 <aside class="sideNav" id="sideNav" aria-label="Ana gezinme">
   <div class="navBrand"><div class="navLogo">🌷</div><div><b>Minik Akademi</b><small>öğrenmenin tatlı hâli</small></div></div>
