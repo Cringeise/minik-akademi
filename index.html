@@ -3461,49 +3461,70 @@ body:has(#extraPage .focusStage) #sideNav .navItem.active{
   body:has(#extraPage .focusStage) #extraPage{width:100%!important;margin:0!important}
 }
 </style>
-<script id="mfa-v34-forced-sidebar-glass-script">
+
+
+
+<style id="mfa-v35-sidebar-solid-fallback">
+/* Keep the navigation panel deliberately dark while the focus room is open.
+   This avoids showing the page's white body behind a transparent rail. */
+html body.mfa-focus-immersive aside.sideNav#sideNav,
+html body:has(#extraPage:not([hidden]) .focusStage) aside.sideNav#sideNav{
+  background-color:#0b1626!important;
+  background-image:linear-gradient(180deg,#101d30 0%,#0a1422 52%,#08111e 100%)!important;
+  background-repeat:no-repeat!important;
+  border-right:1px solid rgba(207,222,239,.16)!important;
+  border-top-color:rgba(207,222,239,.16)!important;
+  box-shadow:10px 0 34px rgba(0,0,0,.24)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  z-index:70!important;
+}
+html body.mfa-focus-immersive aside.sideNav#sideNav .navItem,
+html body:has(#extraPage:not([hidden]) .focusStage) aside.sideNav#sideNav .navItem{
+  color:#edf2f7!important;
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.55)!important;
+}
+html body.mfa-focus-immersive aside.sideNav#sideNav .navItem.active,
+html body:has(#extraPage:not([hidden]) .focusStage) aside.sideNav#sideNav .navItem.active{
+  color:#fff1d7!important;
+  background:rgba(230,207,169,.15)!important;
+  border-color:rgba(235,215,181,.20)!important;
+  box-shadow:inset 2px 0 rgba(223,197,156,.9)!important;
+}
+html body.mfa-focus-immersive aside.sideNav#sideNav .navSection,
+html body:has(#extraPage:not([hidden]) .focusStage) aside.sideNav#sideNav .navSection{
+  color:#afbdce!important;
+}
+html body.mfa-focus-immersive aside.sideNav#sideNav .navBottom,
+html body:has(#extraPage:not([hidden]) .focusStage) aside.sideNav#sideNav .navBottom{
+  background:linear-gradient(135deg,#18263b,#201f35)!important;
+  border:1px solid rgba(220,230,243,.13)!important;
+  color:#e6edf5!important;
+}
+</style>
+<script id="mfa-v35-sidebar-solid-fallback-script">
 (function(){
  'use strict';
  const extra=document.getElementById('extraPage');
- const app=document.getElementById('appShell');
  const nav=document.getElementById('sideNav');
  if(!extra||!nav)return;
  const sync=()=>{
-  const stage=extra.querySelector('.focusStage');
-  const active=!!stage&&!extra.hidden;
-  document.body.classList.toggle('mfa-focus-immersive',active);
-  if(!active){
-   ['background','background-color','background-image','border','box-shadow','backdrop-filter','-webkit-backdrop-filter','z-index'].forEach(k=>nav.style.removeProperty(k));
-   return;
-  }
-  const rail=Math.round(nav.getBoundingClientRect().width)||248;
-  nav.style.setProperty('background','transparent','important');
-  nav.style.setProperty('background-color','transparent','important');
-  nav.style.setProperty('background-image','none','important');
-  nav.style.setProperty('border','0','important');
-  nav.style.setProperty('box-shadow','none','important');
-  nav.style.setProperty('backdrop-filter','none','important');
-  nav.style.setProperty('-webkit-backdrop-filter','none','important');
-  nav.style.setProperty('z-index','70','important');
-  if(app&&window.innerWidth>650){
-   app.style.setProperty('width', 'calc(100% - '+rail+'px)','important');
-   app.style.setProperty('margin-left',rail+'px','important');
-   app.style.setProperty('max-width','none','important');
-   stage.style.setProperty('width','100vw','important');
-   stage.style.setProperty('margin-left',(-rail)+'px','important');
-   stage.style.setProperty('margin-right','0','important');
+  const active=!!extra.querySelector('.focusStage')&&!extra.hidden;
+  if(active){
+   document.body.classList.add('mfa-focus-immersive');
+   nav.style.setProperty('background-color','#0b1626','important');
+   nav.style.setProperty('background-image','linear-gradient(180deg,#101d30 0%,#0a1422 52%,#08111e 100%)','important');
+   nav.style.setProperty('border-right','1px solid rgba(207,222,239,.16)','important');
+   nav.style.setProperty('box-shadow','10px 0 34px rgba(0,0,0,.24)','important');
+   nav.style.setProperty('backdrop-filter','none','important');
+   nav.style.setProperty('-webkit-backdrop-filter','none','important');
+   nav.style.setProperty('z-index','70','important');
   }else{
-   if(app){
-    app.style.setProperty('width','100%','important');
-    app.style.setProperty('margin-left','0','important');
-   }
-   stage.style.setProperty('width','100%','important');
-   stage.style.setProperty('margin-left','0','important');
+   ['background-color','background-image','border-right','box-shadow','backdrop-filter','-webkit-backdrop-filter','z-index'].forEach(k=>nav.style.removeProperty(k));
   }
-  stage.style.setProperty('position','relative','important');
-  stage.style.setProperty('z-index','0','important');
-  stage.style.setProperty('overflow','hidden','important');
-  stage.style.setProperty('background-color','#091321','important');
  };
  const old=window.goPage;
  if(typeof old==='function'){
@@ -3514,11 +3535,10 @@ body:has(#extraPage .focusStage) #sideNav .navItem.active{
    return result;
   };
  }
- const observer=new MutationObserver(sync);
- observer.observe(extra,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+ new MutationObserver(sync).observe(extra,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
  sync();
  window.addEventListener('resize',sync,{passive:true});
- window.MINIK_AKADEMI_V34={sidebarGlassForced:true,backgroundExtendsUnderNav:true};
+ window.MINIK_AKADEMI_V35={sidebarSolidFallback:true,version:'35.0'};
 })();
 </script>
 
