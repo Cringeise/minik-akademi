@@ -812,6 +812,257 @@ body.mfa-focus-immersive .focusEmpty{
   body.mfa-focus-immersive .focusControls .focusControl{background:transparent!important}
 }
 </style>
+
+<style id="mfa-v24-centered-focus-clock">
+/* v24 — center the timer composition and give the clock a modern, open instrument look */
+body.mfa-focus-immersive .focusStage{
+  height:max(100svh,780px)!important;
+  min-height:780px!important;
+}
+body.mfa-focus-immersive .focusOverlay{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:1fr!important;
+  justify-items:center!important;
+  align-items:center!important;
+  align-content:center!important;
+  min-height:100svh!important;
+  height:100%!important;
+  padding:clamp(62px,8vh,92px) 24px 38px!important;
+  gap:0!important;
+}
+body.mfa-focus-immersive .focusPanel{
+  grid-column:1!important;
+  grid-row:1!important;
+  justify-self:center!important;
+  align-self:center!important;
+  width:min(100%,690px)!important;
+  max-width:690px!important;
+  margin:0 auto!important;
+  padding:12px clamp(12px,2.8vw,28px)!important;
+  text-align:center!important;
+  overflow:visible!important;
+}
+body.mfa-focus-immersive .focusPanelHead{
+  width:100%!important;
+  max-width:620px!important;
+  margin:0 auto!important;
+  justify-content:space-between!important;
+}
+body.mfa-focus-immersive .focusPanelBrand{gap:9px!important}
+body.mfa-focus-immersive .focusPanelGlyph{
+  width:auto!important;height:auto!important;
+  border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+  font-size:21px!important;
+}
+body.mfa-focus-immersive .focusLive{
+  padding:5px 0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusModeTabs{
+  width:min(100%,430px)!important;
+  margin:17px auto 12px!important;padding:0 0 4px!important;
+  display:flex!important;justify-content:center!important;gap:24px!important;
+  border:0!important;border-bottom:1px solid rgba(241,226,202,.22)!important;
+  border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusModeBtn{
+  flex:0 1 auto!important;min-width:135px!important;
+  padding:10px 5px 12px!important;border:0!important;border-radius:0!important;
+  border-bottom:2px solid transparent!important;
+  background:transparent!important;box-shadow:none!important;
+  color:rgba(239,235,228,.76)!important;
+}
+body.mfa-focus-immersive .focusModeBtn.active{
+  color:#f6dfb8!important;border-bottom-color:#e3c38e!important;
+  background:transparent!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusSoundBar{
+  width:min(100%,550px)!important;margin:8px auto 2px!important;
+  padding:4px 0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusRainIcon{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusRainSwitch{
+  background:transparent!important;border-color:rgba(241,226,202,.46)!important;
+}
+body.mfa-focus-immersive .focusRainSwitch i{background:#e8d4b3!important}
+body.mfa-focus-immersive .focusDial{
+  position:relative!important;isolation:auto!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:min(100%,620px)!important;max-width:620px!important;
+  min-height:0!important;height:auto!important;aspect-ratio:auto!important;
+  margin:17px auto 14px!important;padding:13px 0 15px!important;
+  border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusDial:before,
+body.mfa-focus-immersive .focusDial:after{display:none!important;content:none!important}
+body.mfa-focus-immersive .focusDialInner{
+  width:100%!important;max-width:620px!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;
+  gap:5px!important;padding:0!important;margin:0 auto!important;
+  background:transparent!important;text-align:center!important;
+}
+body.mfa-focus-immersive .focusPhase{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  margin:0 0 3px!important;padding:0 0 7px!important;
+  border:0!important;border-bottom:1px solid rgba(228,204,165,.56)!important;
+  border-radius:0!important;background:transparent!important;
+  color:#ead6b4!important;font-size:10px!important;
+  letter-spacing:.25em!important;font-weight:850!important;
+}
+body.mfa-focus-immersive .focusClock{
+  display:block!important;width:100%!important;
+  margin:2px 0 0!important;
+  color:#fff8eb!important;
+  font-size:clamp(76px,10.2vw,116px)!important;
+  line-height:.98!important;letter-spacing:-.085em!important;
+  font-weight:250!important;font-variant-numeric:tabular-nums!important;
+  text-shadow:0 5px 28px rgba(0,0,0,.62),0 0 34px rgba(236,214,180,.16)!important;
+}
+body.mfa-focus-immersive .focusSubclock{
+  margin:5px 0 0!important;min-height:18px!important;
+  color:rgba(244,239,229,.82)!important;
+  font-size:12px!important;letter-spacing:.035em!important;
+  text-shadow:0 2px 10px rgba(0,0,0,.85)!important;
+}
+body.mfa-focus-immersive .focusRoundChip{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  gap:9px!important;margin:13px auto 0!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+  box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusRoundChip span{
+  color:rgba(235,228,215,.66)!important;font-size:8px!important;letter-spacing:.18em!important;
+}
+body.mfa-focus-immersive .focusRoundChip b{
+  color:#f4dfbd!important;font-size:10px!important;letter-spacing:.08em!important;
+}
+body.mfa-focus-immersive .focusProgress{
+  width:min(100%,470px)!important;height:3px!important;
+  margin:0 auto 17px!important;border:0!important;border-radius:20px!important;
+  background:rgba(255,255,255,.23)!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusProgress span{
+  height:100%!important;border-radius:20px!important;
+  background:linear-gradient(90deg,#b99b70,#f1dcba)!important;
+  box-shadow:0 0 12px rgba(236,210,168,.34)!important;
+}
+body.mfa-focus-immersive .focusControls{
+  display:flex!important;justify-content:center!important;align-items:center!important;
+  gap:11px!important;flex-wrap:wrap!important;
+  width:100%!important;margin:0 auto!important;
+}
+body.mfa-focus-immersive .focusControls .focusControl{
+  min-width:120px!important;flex:0 1 auto!important;
+  padding:11px 17px!important;border:1px solid rgba(238,221,193,.52)!important;
+  border-radius:999px!important;background:transparent!important;
+  color:#fff1d8!important;box-shadow:none!important;
+  font-size:11px!important;letter-spacing:.035em!important;
+}
+body.mfa-focus-immersive .focusControls .focusControl:first-child{
+  border-color:rgba(244,220,181,.88)!important;
+  color:#ffe9c2!important;
+}
+body.mfa-focus-immersive .focusSettingsTitle{
+  display:flex!important;justify-content:center!important;align-items:center!important;
+  gap:10px!important;margin:17px auto 10px!important;padding:12px 0 0!important;
+  width:min(100%,550px)!important;
+  border-top:1px solid rgba(240,229,210,.23)!important;
+  background:transparent!important;
+}
+body.mfa-focus-immersive .focusSettings{
+  width:min(100%,550px)!important;max-width:550px!important;
+  margin:0 auto!important;justify-items:stretch!important;
+  gap:10px 14px!important;background:transparent!important;
+}
+body.mfa-focus-immersive .focusField{
+  min-width:0!important;text-align:left!important;
+  background:transparent!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusField label{
+  color:rgba(239,232,218,.76)!important;
+  text-shadow:0 1px 7px rgba(0,0,0,.85)!important;
+}
+body.mfa-focus-immersive .focusField input,
+body.mfa-focus-immersive .focusField select{
+  min-height:39px!important;padding:9px 11px!important;
+  border:1px solid rgba(239,226,205,.35)!important;
+  border-radius:10px!important;background:transparent!important;
+  box-shadow:none!important;color:#fff4df!important;
+}
+body.mfa-focus-immersive .focusStatus{
+  width:min(100%,550px)!important;margin:9px auto 0!important;padding:3px 0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+  box-shadow:none!important;color:#f0dfc0!important;
+  text-shadow:0 2px 9px rgba(0,0,0,.92)!important;text-align:center!important;
+}
+body.mfa-focus-immersive .focusCoffeeStation{
+  left:clamp(18px,3.2vw,42px)!important;
+  top:auto!important;bottom:clamp(22px,4vh,42px)!important;
+  transform:scale(.82)!important;transform-origin:bottom left!important;
+}
+body.mfa-focus-immersive .focusCoffeeStation:before{display:none!important}
+body.mfa-focus-immersive .focusCoffeeStatus,
+body.mfa-focus-immersive .focusCoffeeAction{left:0!important}
+@media(max-width:1100px) and (min-width:651px){
+  body.mfa-focus-immersive .focusOverlay{padding:68px 22px 34px!important}
+  body.mfa-focus-immersive .focusPanel{width:min(100%,610px)!important;max-width:610px!important}
+  body.mfa-focus-immersive .focusClock{font-size:clamp(70px,9vw,98px)!important}
+  body.mfa-focus-immersive .focusCoffeeStation{
+    left:16px!important;bottom:20px!important;transform:scale(.68)!important;
+  }
+}
+@media(max-width:650px){
+  body.mfa-focus-immersive .focusStage{
+    height:auto!important;min-height:calc(100svh - 2px)!important;
+    padding:0 0 24px!important;overflow:hidden!important;
+  }
+  body.mfa-focus-immersive .focusCoffeeStation{
+    position:relative!important;left:auto!important;top:auto!important;bottom:auto!important;
+    width:244px!important;height:266px!important;
+    margin:48px auto 0!important;flex:none!important;
+    transform:scale(.83)!important;transform-origin:top center!important;
+  }
+  body.mfa-focus-immersive .focusOverlay{
+    display:flex!important;flex-direction:column!important;align-items:center!important;
+    justify-content:flex-start!important;gap:0!important;
+    width:100%!important;height:auto!important;min-height:0!important;
+    padding:0 13px 14px!important;margin:0!important;
+  }
+  body.mfa-focus-immersive .focusPanel{
+    order:0!important;width:100%!important;max-width:560px!important;
+    margin:0 auto!important;padding:8px 3px 10px!important;
+  }
+  body.mfa-focus-immersive .focusPanelHead{max-width:520px!important}
+  body.mfa-focus-immersive .focusModeTabs{gap:12px!important;width:min(100%,380px)!important;margin:13px auto 8px!important}
+  body.mfa-focus-immersive .focusModeBtn{min-width:0!important;flex:1 1 0!important;font-size:10px!important}
+  body.mfa-focus-immersive .focusSoundBar{width:min(100%,450px)!important;margin:5px auto!important;gap:7px!important}
+  body.mfa-focus-immersive .focusDial{width:100%!important;margin:12px auto 10px!important;padding:8px 0 10px!important}
+  body.mfa-focus-immersive .focusClock{font-size:clamp(68px,17vw,94px)!important}
+  body.mfa-focus-immersive .focusSubclock{font-size:10px!important}
+  body.mfa-focus-immersive .focusProgress{width:min(100%,390px)!important;margin-bottom:13px!important}
+  body.mfa-focus-immersive .focusControls{gap:7px!important}
+  body.mfa-focus-immersive .focusControls .focusControl{
+    min-width:0!important;padding:10px 12px!important;font-size:9px!important;
+  }
+  body.mfa-focus-immersive .focusSettingsTitle{margin-top:13px!important;padding-top:10px!important}
+  body.mfa-focus-immersive .focusSettings{gap:8px!important}
+  body.mfa-focus-immersive .focusField input,
+  body.mfa-focus-immersive .focusField select{padding:8px 8px!important;font-size:10px!important}
+  body.mfa-focus-immersive .focusStatus{font-size:9px!important}
+}
+@media(max-width:380px){
+  body.mfa-focus-immersive .focusCoffeeStation{margin-top:42px!important;transform:scale(.76)!important;margin-bottom:-18px!important}
+  body.mfa-focus-immersive .focusClock{font-size:66px!important}
+  body.mfa-focus-immersive .focusControls .focusControl{padding:9px 8px!important}
+}
+</style>
 </head><body>
 <aside class="sideNav" id="sideNav" aria-label="Ana gezinme">
   <div class="navBrand"><div class="navLogo">🌷</div><div><b>Minik Akademi</b><small>öğrenmenin tatlı hâli</small></div></div>
