@@ -1,16 +1,20 @@
-# Minik Akademi v15
+# Minik Akademi v16
 
 Pastel tasarımlı, telefon ve masaüstü uyumlu TYT fen öğrenme platformu. Site tek bir `index.html` dosyasıyla çalışır; ek sunucu veya ücretli ön yüz servisi gerektirmez.
 
 ## Dersler
 
-| Ders | Konu | Test sorusu | Yorum sorusu | Sanal atölye |
+| Ders | Konu | Soru bankası | Yorum sorusu | Etkileşimli atölye |
 |---|---:|---:|---:|---:|
 | TYT Fizik | 11 | 440 | 44 | Fizik laboratuvarı |
-| TYT Kimya | 7 | 70 | 28 | 4 etkileşimli model |
-| TYT Biyoloji | 8 | 80 | 32 | 6 etkileşimli model |
+| TYT Kimya | 7 | 280 | 28 | 4 dijital model |
+| TYT Biyoloji | 8 | 320 | 32 | 6 dijital model |
 
-Kimya ve biyoloji konu anlatımları, açıklamalı testler, yorum soruları, hızlı tekrar kartları ve deney/simülasyon alanları içerir. Fizik tarafındaki önceki içerik korunmuştur. İlerleme, test cevapları ve yorum yanıtları yerel kayda ve hesap bağlantısı varsa Supabase eşitlemesine eklenir.
+Her konuda 40 soruluk, dört testten oluşan soru bankası bulunur. Toplam 26 konu ve 1.040 soru vardır. Kimya ve biyoloji için 450 yeni özgün soru eklendi. Testler açıklamalı geri bildirim, cevap kaydı ve konu tamamlama akışıyla çalışır.
+
+## Çıkmış Sorular ve MEB kaynakları
+
+Ders kütüphanesindeki **Çıkmış Sorular & Kaynaklar** bölümünden OGM TYT 2018–2026 arşivi ile fizik, kimya ve biyoloji MEB kitaplarına erişilir. Resmî sınav soruları kendi yayımlandıkları kaynaklarda açılır; izin olmadan Minik Akademi içinde yeniden yayımlanmaz. Soru bankasındaki yeni sorular özgündür ve ilgili konu becerilerini çalıştırmak üzere hazırlanmıştır.
 
 ## GitHub Pages ile yayınlama
 
@@ -40,7 +44,7 @@ Supabase'in varsayılan e-posta servisi kısıtlıdır. Harici SMTP olmadan doğ
 - Siteye reklam veya analitik takip SDK'sı eklenmemiştir.
 - Kimya ve biyoloji atölyeleri güvenli dijital eğitim modelleridir; gerçek kimyasal madde kullanma talimatı içermez.
 
-## Proje notları
+## Proje dosyaları
 
 - Ana uygulama: `index.html`
 - Gizlilik notu: `gizlilik.html`
