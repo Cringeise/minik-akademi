@@ -708,6 +708,110 @@ body.mfa-focus-immersive .focusStage .focusRainDrop{opacity:.7}
   body.mfa-focus-immersive .focusCloud{animation:none!important}
 }
 </style>
+
+<style id="mfa-v23-clear-focus-glass-style">
+/* v23 — remove opaque layers so the rainy scene stays visible everywhere */
+body.mfa-focus-immersive,
+body.mfa-focus-immersive #appShell,
+body.mfa-focus-immersive #extraPage,
+body.mfa-focus-immersive .focusPage,
+body.mfa-focus-immersive .focusStage,
+body.mfa-focus-immersive .focusOverlay{background:transparent!important}
+body.mfa-focus-immersive .sideNav#sideNav{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+body.mfa-focus-immersive #sideNav .navItem,
+body.mfa-focus-immersive #sideNav .navItem:hover,
+body.mfa-focus-immersive #sideNav .navItem.active{
+  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive #sideNav .navItem{
+  color:#f5f0e8!important;text-shadow:0 2px 9px rgba(0,0,0,.92),0 1px 3px rgba(0,0,0,.95)!important;
+}
+body.mfa-focus-immersive #sideNav .navItem.active{
+  color:#ffe8bd!important;text-decoration:underline;
+  text-decoration-color:rgba(255,232,189,.75);text-underline-offset:5px;
+}
+body.mfa-focus-immersive .focusPanel{
+  background:transparent!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;-webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;overflow:visible!important;
+}
+body.mfa-focus-immersive .focusPanel:before,
+body.mfa-focus-immersive .focusPanel:after{display:none!important}
+body.mfa-focus-immersive .focusDial{
+  background:conic-gradient(from -90deg,#e8c994 0deg var(--focus-angle),rgba(255,255,255,.27) var(--focus-angle) 360deg)!important;
+  box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusDial:before{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusDialInner{background:transparent!important}
+body.mfa-focus-immersive .focusRoundChip{
+  background:transparent!important;border-color:rgba(245,235,218,.27)!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusProgress{background:rgba(255,255,255,.20)!important}
+body.mfa-focus-immersive .focusControls .focusControl,
+body.mfa-focus-immersive .focusControls .focusControl.secondary,
+body.mfa-focus-immersive .focusControls .focusControl.save{
+  background:transparent!important;color:#fff0d0!important;
+  border:1px solid rgba(245,228,199,.58)!important;box-shadow:none!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.9)!important;
+}
+body.mfa-focus-immersive .focusControls .focusControl:hover{background:rgba(255,255,255,.07)!important}
+body.mfa-focus-immersive .focusSettingsTitle{
+  background:transparent!important;border-color:rgba(240,229,210,.22)!important;
+}
+body.mfa-focus-immersive .focusSettings,
+body.mfa-focus-immersive .focusField,
+body.mfa-focus-immersive .focusStatus{background:transparent!important;box-shadow:none!important}
+body.mfa-focus-immersive .focusField input,
+body.mfa-focus-immersive .focusField select{
+  background:transparent!important;border:1px solid rgba(240,232,219,.38)!important;
+  box-shadow:none!important;color:#fff4df!important;text-shadow:0 1px 6px rgba(0,0,0,.9)!important;
+}
+body.mfa-focus-immersive .focusField option{background:#182638!important;color:#f5eee2!important}
+body.mfa-focus-immersive .focusCoffeeStation:before{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+body.mfa-focus-immersive .focusCoffeeStatus{
+  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.95)!important;
+}
+body.mfa-focus-immersive .focusCoffeeAction{
+  background:transparent!important;border:1px solid rgba(239,220,190,.52)!important;
+  box-shadow:none!important;color:#fff0d2!important;text-shadow:0 2px 8px rgba(0,0,0,.95)!important;
+}
+body.mfa-focus-immersive .focusBelow,
+body.mfa-focus-immersive .focusStatCard,
+body.mfa-focus-immersive .focusStatHead,
+body.mfa-focus-immersive .focusGoalLine,
+body.mfa-focus-immersive .focusHistory,
+body.mfa-focus-immersive .focusHistoryRow,
+body.mfa-focus-immersive .focusEmpty{
+  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+}
+body.mfa-focus-immersive .focusHistoryRow{
+  border-bottom:1px solid rgba(240,232,219,.17)!important;border-radius:0!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.95)!important;
+}
+body.mfa-focus-immersive .focusStatHead h3,
+body.mfa-focus-immersive .focusStatHead small,
+body.mfa-focus-immersive .focusGoalText,
+body.mfa-focus-immersive .focusHistoryRow span,
+body.mfa-focus-immersive .focusHistoryRow b,
+body.mfa-focus-immersive .focusEmpty{
+  color:#f0eadf!important;text-shadow:0 2px 8px rgba(0,0,0,.95)!important;
+}
+@media(max-width:650px){
+  body.mfa-focus-immersive .sideNav#sideNav{background:transparent!important;border:0!important;box-shadow:none!important}
+  body.mfa-focus-immersive #sideNav .navItem{background:transparent!important;text-shadow:0 2px 8px rgba(0,0,0,.96)!important}
+  body.mfa-focus-immersive .focusPanel{background:transparent!important;border:0!important;box-shadow:none!important}
+  body.mfa-focus-immersive .focusControls .focusControl{background:transparent!important}
+}
+</style>
 </head><body>
 <aside class="sideNav" id="sideNav" aria-label="Ana gezinme">
   <div class="navBrand"><div class="navLogo">🌷</div><div><b>Minik Akademi</b><small>öğrenmenin tatlı hâli</small></div></div>
