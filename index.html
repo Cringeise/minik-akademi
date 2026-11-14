@@ -3716,5 +3716,110 @@ body.mfa-night #mfaAdminButton{background:#172235!important;color:#f5e7ca!import
 body.mfa-night #mfaAdminRows .mfaAdminError{color:#f0c4ca!important;line-height:1.6}
 </style>
 
+
+<style id="mfa-v30-focus-surface-lock">
+/* The focus room must never inherit the academy's light page surface. */
+html.mfa-focus-surface-lock,
+body.mfa-focus-surface-lock,
+body.mfa-focus-immersive{
+  min-height:100%!important;
+  background-color:#081321!important;
+  background-image:radial-gradient(ellipse at 50% 0%,#1b2b43 0%,#0b1626 48%,#070d17 100%)!important;
+  color:#e8edf4!important;
+}
+body.mfa-focus-surface-lock #appShell,
+body.mfa-focus-surface-lock .app,
+body.mfa-focus-surface-lock #extraPage,
+body.mfa-focus-surface-lock #extraPage.routePage,
+body.mfa-focus-surface-lock #extraPage .focusPage,
+body.mfa-focus-surface-lock #extraPage .focusBelow{
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+}
+body.mfa-focus-surface-lock #extraPage{
+  display:block!important;
+  min-height:100svh!important;
+}
+body.mfa-focus-surface-lock #extraPage .focusStage{
+  position:relative!important;
+  isolation:isolate!important;
+  min-height:100svh!important;
+  background-color:#091321!important;
+  background-image:linear-gradient(180deg,#17243a 0%,#263c55 52%,#101a29 100%)!important;
+}
+body.mfa-focus-surface-lock #extraPage .focusSky{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  opacity:1!important;
+  background-color:#0a1522!important;
+  background-image:radial-gradient(ellipse at 78% 18%,rgba(102,122,150,.30),transparent 28%),linear-gradient(180deg,#111d32 0%,#243b55 46%,#101b2a 100%)!important;
+}
+body.mfa-focus-surface-lock #extraPage .focusSky::before{
+  display:block!important;
+  background-color:#0a1522!important;
+  background-position:center center!important;
+  background-size:cover!important;
+}
+body.mfa-focus-surface-lock #extraPage .focusOverlay{
+  position:relative!important;
+  z-index:4!important;
+}
+body.mfa-focus-surface-lock #extraPage .focusCoffeeStation{
+  z-index:5!important;
+}
+@media(max-width:650px){
+  body.mfa-focus-surface-lock #extraPage .focusStage{
+    min-height:calc(100svh - 4px)!important;
+  }
+}
+</style>
+<script id="mfa-v30-focus-surface-lock-script">
+(function(){
+ 'use strict';
+ const apply=()=>{
+  const html=document.documentElement,body=document.body;
+  const active=body.classList.contains('mfa-focus-immersive')||
+               !!document.querySelector('#extraPage .focusStage');
+  html.classList.toggle('mfa-focus-surface-lock',active);
+  body.classList.toggle('mfa-focus-surface-lock',active);
+  if(!active)return;
+  html.style.setProperty('background-color','#081321','important');
+  body.style.setProperty('background-color','#081321','important');
+  body.style.setProperty('background-image','radial-gradient(ellipse at 50% 0%,#1b2b43 0%,#0b1626 48%,#070d17 100%)','important');
+  const stage=document.querySelector('#extraPage .focusStage');
+  const sky=document.querySelector('#extraPage .focusSky');
+  if(stage){
+   stage.style.setProperty('background-color','#091321','important');
+   stage.style.setProperty('background-image','linear-gradient(180deg,#17243a 0%,#263c55 52%,#101a29 100%)','important');
+   stage.style.setProperty('min-height','100svh','important');
+  }
+  if(sky){
+   sky.style.setProperty('background-color','#0a1522','important');
+   sky.style.setProperty('background-image','radial-gradient(ellipse at 78% 18%,rgba(102,122,150,.30),transparent 28%),linear-gradient(180deg,#111d32 0%,#243b55 46%,#101b2a 100%)','important');
+   sky.style.setProperty('opacity','1','important');
+  }
+ };
+ const original=window.goPage;
+ if(typeof original==='function'){
+  window.goPage=function(page){
+   const result=original.apply(this,arguments);
+   requestAnimationFrame(apply);
+   return result;
+  };
+ }
+ apply();
+ const target=document.getElementById('extraPage');
+ if(target&&typeof MutationObserver!=='undefined'){
+  const observer=new MutationObserver(apply);
+  observer.observe(target,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+ }
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)apply();});
+ window.MINIK_AKADEMI_V30={focusBackdropLock:true,version:'30.0'};
+})();
+</script>
+
 </body>
 </html>
