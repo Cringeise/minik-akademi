@@ -1654,6 +1654,7 @@ let focusTimer={mode:'pomodoro',phase:'focus',duration:25*60,remaining:25*60,ela
 let focusStatus='Küçük bir hedef seç, sonra ilk adımı at.';
 let focusUiMounted=false;
 let focusSubject='Ders çalışması';
+const coffeeState={level:0,brewing:false,position:'shelf',lastDrinkAt:0,consumeDuration:0,drag:null,brewTimer:null};
 try{focusSessions=JSON.parse(localStorage.getItem(FOCUS_SESSIONS_KEY)||'[]');if(!Array.isArray(focusSessions))focusSessions=[];}catch(_){focusSessions=[];}
 try{focusGoal=Number(localStorage.getItem(FOCUS_GOAL_KEY))||120;}catch(_){focusGoal=120;}
 function persistSessions(){try{localStorage.setItem(FOCUS_SESSIONS_KEY,JSON.stringify(focusSessions.slice(-120)));}catch(_) {}}
@@ -1663,6 +1664,74 @@ function formatSeconds(total,withHours=false){total=Math.max(0,Math.floor(total|
 function prettyDuration(sec){sec=Math.max(0,Math.floor(sec||0));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60);if(h)return `${h} sa ${m} dk`;if(m)return `${m} dk`;return `${sec} sn`;}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function rainDrops(){return Array.from({length:58},(_,i)=>`<i class="focusRainDrop" style="--x:${(i*37)%100}%;--length:${18+(i*11)%23}px;--speed:${.75+(i%7)*.13}s;--delay:${-(i%13)*.21}s;--alpha:${.2+(i%5)*.08}"></i>`).join('');}
+function updateCoffeeVisual(){
+ const liquid=document.getElementById('focusCoffeeLiquid'),cup=document.getElementById('focusGlassCup'),station=document.getElementById('focusCoffeeStation'),status=document.getElementById('focusCoffeeStatus'),tag=document.getElementById('focusCupTag'),steam=document.getElementById('focusCupSteam'),action=document.getElementById('focusCoffeeAction');
+ if(liquid){const h=36*Math.max(0,Math.min(1,coffeeState.level));liquid.setAttribute('y',(17+36-h).toFixed(2));liquid.setAttribute('height',h.toFixed(2));}
+ if(cup){cup.classList.toggle('is-dragging',!!coffeeState.drag);cup.classList.toggle('is-filled',coffeeState.level>.03);cup.classList.toggle('is-empty',coffeeState.level<=.03&&coffeeState.position==='tray');}
+ if(station){station.classList.toggle('is-brewing',coffeeState.brewing);station.classList.toggle('has-coffee',coffeeState.level>.03);station.classList.toggle('cup-on-tray',coffeeState.position==='tray');}
+ if(status){status.textContent=coffeeState.brewing?'Kahven hazırlanıyor…':coffeeState.level>.03?`Taze kahve · %${Math.round(coffeeState.level*100)} kaldı`:coffeeState.position==='tray'?'Kupan boşaldı · Yeniden doldurabilirsin':'Kupan rafta · Makineye sürükle';}
+ if(tag)tag.textContent=coffeeState.brewing?'DEMLENİYOR':coffeeState.level>.03?`${Math.round(coffeeState.level*100)}% KAHVE`:coffeeState.position==='tray'?'BOŞ KUPA':'KUPAYI SÜRÜKLE';
+ if(steam)steam.style.opacity=coffeeState.level>.03?'1':'0';
+ if(action){action.textContent=coffeeState.brewing?'☕ Demleniyor…':coffeeState.level>.03?'↺ Kupayı rafa koy':'☕ Kupayı doldur';action.disabled=coffeeState.brewing;}
+}
+function setCoffeeCupPosition(position){
+ const cup=document.getElementById('focusGlassCup'),station=document.getElementById('focusCoffeeStation');if(!cup||!station)return;
+ coffeeState.position=position;
+ if(position==='shelf'){cup.style.left='54px';cup.style.top='3px';coffeeState.level=0;coffeeState.lastDrinkAt=0;coffeeState.consumeDuration=0;}
+ else{cup.style.left='80px';cup.style.top='142px';}
+ updateCoffeeVisual();
+}
+function brewCoffee(){
+ if(coffeeState.brewing)return;
+ if(coffeeState.brewTimer){clearInterval(coffeeState.brewTimer);coffeeState.brewTimer=null;}
+ coffeeState.position='tray';coffeeState.level=0;coffeeState.brewing=true;coffeeState.lastDrinkAt=0;coffeeState.consumeDuration=0;
+ setCoffeeCupPosition('tray');coffeeState.brewing=true;updateCoffeeVisual();
+ const station=document.getElementById('focusCoffeeStation');if(station)station.classList.add('is-brewing');
+ let progress=0;coffeeState.brewTimer=setInterval(()=>{
+  progress=Math.min(1,progress+.035);coffeeState.level=progress;updateCoffeeVisual();
+  if(progress>=1){clearInterval(coffeeState.brewTimer);coffeeState.brewTimer=null;coffeeState.brewing=false;coffeeState.level=1;updateCoffeeVisual();}
+ },65);
+}
+function coffeeCupRect(){const cup=document.getElementById('focusGlassCup');return cup?cup.getBoundingClientRect():null;}
+window.mfaCoffeePointerDown=function(event){
+ const cup=event.currentTarget;if(coffeeState.brewing)return;
+ event.preventDefault();const station=document.getElementById('focusCoffeeStation'),rect=cup.getBoundingClientRect();
+ const stationRect=station.getBoundingClientRect(),scaleX=stationRect.width/station.offsetWidth||1,scaleY=stationRect.height/station.offsetHeight||1;coffeeState.drag={pointerId:event.pointerId,offsetX:(event.clientX-rect.left)/scaleX,offsetY:(event.clientY-rect.top)/scaleY,origin:coffeeState.position};
+ try{cup.setPointerCapture(event.pointerId);}catch(_){}cup.classList.add('is-dragging');
+};
+window.mfaCoffeePointerMove=function(event){
+ if(!coffeeState.drag||event.pointerId!==coffeeState.drag.pointerId)return;
+ const cup=event.currentTarget,station=document.getElementById('focusCoffeeStation');if(!station)return;
+ const sr=station.getBoundingClientRect(),scaleX=sr.width/station.offsetWidth||1,scaleY=sr.height/station.offsetHeight||1;
+ const left=Math.max(0,Math.min(station.offsetWidth-cup.offsetWidth,(event.clientX-sr.left)/scaleX-coffeeState.drag.offsetX));
+ const top=Math.max(0,Math.min(station.offsetHeight-cup.offsetHeight,(event.clientY-sr.top)/scaleY-coffeeState.drag.offsetY));
+ cup.style.left=left+'px';cup.style.top=top+'px';
+ const target=document.getElementById('focusCoffeeDropzone');if(target){const a=cup.getBoundingClientRect(),b=target.getBoundingClientRect();const overlap=!(a.right<b.left||a.left>b.right||a.bottom<b.top||a.top>b.bottom);target.classList.toggle('drop-ready',overlap);}
+};
+window.mfaCoffeePointerUp=function(event){
+ if(!coffeeState.drag||event.pointerId!==coffeeState.drag.pointerId)return;
+ const cup=event.currentTarget,target=document.getElementById('focusCoffeeDropzone');let dropped=false;
+ if(target){const a=cup.getBoundingClientRect(),b=target.getBoundingClientRect();dropped=!(a.right<b.left+8||a.left>b.right-8||a.bottom<b.top+5||a.top>b.bottom-5);target.classList.remove('drop-ready');}
+ coffeeState.drag=null;cup.classList.remove('is-dragging');
+ if(dropped){setCoffeeCupPosition('tray');brewCoffee();}
+ else if(cup.getBoundingClientRect().top<document.getElementById('focusCoffeeStation').getBoundingClientRect().top+85){setCoffeeCupPosition('shelf');}
+ else if(coffeeState.position==='tray'){setCoffeeCupPosition('tray');}
+ else{setCoffeeCupPosition('shelf');}
+};
+window.mfaCoffeePointerCancel=function(){coffeeState.drag=null;setCoffeeCupPosition(coffeeState.position==='tray'?'tray':'shelf');};
+window.mfaCoffeeKey=function(event){if(event.key!=='Enter'&&event.key!==' ')return;event.preventDefault();window.mfaCoffeeAction();};
+window.mfaCoffeeAction=function(){if(coffeeState.brewing)return;if(coffeeState.level>.03){setCoffeeCupPosition('shelf');return;}setCoffeeCupPosition('tray');brewCoffee();};
+function updateCoffeeConsumption(now=Date.now()){
+ if(coffeeState.level<=0||coffeeState.brewing){coffeeState.lastDrinkAt=0;updateCoffeeVisual();return;}
+ const drinking=focusTimer.running&&(focusTimer.mode==='stopwatch'||focusTimer.phase==='focus');
+ if(!drinking){coffeeState.lastDrinkAt=0;updateCoffeeVisual();return;}
+ if(!coffeeState.consumeDuration)coffeeState.consumeDuration=focusTimer.mode==='pomodoro'?Math.max(60,focusTimer.remaining||focusTimer.duration):45*60;
+ if(!coffeeState.lastDrinkAt){coffeeState.lastDrinkAt=now;updateCoffeeVisual();return;}
+ const elapsed=Math.max(0,(now-coffeeState.lastDrinkAt)/1000);coffeeState.lastDrinkAt=now;
+ coffeeState.level=Math.max(0,coffeeState.level-elapsed/coffeeState.consumeDuration);
+ if(coffeeState.level===0)coffeeState.lastDrinkAt=0;
+ updateCoffeeVisual();
+}
 function recentHistory(){const rows=[];for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);const date=dayKey(d);const seconds=focusSessions.filter(x=>x.date===date).reduce((n,x)=>n+(Number(x.seconds)||0),0);rows.push({date,label:i===0?'Bugün':i===1?'Dün':d.toLocaleDateString('tr-TR',{weekday:'short',day:'numeric',month:'short'}),seconds});}return rows;}
 function renderFocusPage(){
  const total=todaySeconds(),pct=Math.min(100,Math.round(total/(focusGoal*60)*100));
@@ -1674,11 +1743,24 @@ function renderFocusPage(){
    <div class="focusSky" aria-hidden="true">
     <div class="focusPhotoVignette"></div>${rainDrops()}
    </div>
+   <div class="focusCoffeeStation" id="focusCoffeeStation" aria-label="Kahve köşesi">
+    <div class="focusCoffeeShelf"><span class="coffeeShelfPlant">✿</span><span class="coffeeShelfText">COFFEE CORNER</span></div>
+    <button type="button" class="focusGlassCup" id="focusGlassCup" aria-label="Cam kupayı raftan kahve makinesine sürükle" title="Kupayı tutup kahve makinesinin tepsisine bırak" onpointerdown="mfaCoffeePointerDown(event)" onpointermove="mfaCoffeePointerMove(event)" onpointerup="mfaCoffeePointerUp(event)" onpointercancel="mfaCoffeePointerCancel(event)" onkeydown="mfaCoffeeKey(event)">
+     <svg viewBox="0 0 64 78" role="img" aria-label="İçindeki kahve görünen şeffaf cam kupa"><defs><clipPath id="focusGlassClip"><path d="M12 12 Q11 11 13 11 H45 Q48 12 47 16 L43 60 Q31 69 18 60 Z"/></clipPath><linearGradient id="focusCoffeeLiquidGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b87943"/><stop offset=".35" stop-color="#80502f"/><stop offset="1" stop-color="#3d261d"/></linearGradient><linearGradient id="focusGlassGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#eff8ff" stop-opacity=".34"/><stop offset=".22" stop-color="#dceaf4" stop-opacity=".07"/><stop offset=".72" stop-color="#eff8ff" stop-opacity=".02"/><stop offset="1" stop-color="#d9e8f2" stop-opacity=".28"/></linearGradient></defs><path d="M45 22 H51 Q60 22 59 34 Q58 48 44 47" fill="none" stroke="#e7f1f6" stroke-opacity=".72" stroke-width="4.5"/><path d="M45 25 H50 Q55 25 54 34 Q53 42 45 43" fill="none" stroke="#9eb5c4" stroke-opacity=".5" stroke-width="1.3"/><rect id="focusCoffeeLiquid" x="14" y="53" width="32" height="0" fill="url(#focusCoffeeLiquidGrad)" clip-path="url(#focusGlassClip)"/><path d="M12 12 Q11 11 13 11 H45 Q48 12 47 16 L43 60 Q31 69 18 60 Z" fill="url(#focusGlassGrad)" stroke="#e9f2f7" stroke-opacity=".8" stroke-width="1.8"/><path d="M15 15 Q14 18 16 30 L18 48" fill="none" stroke="#fff" stroke-opacity=".72" stroke-width="2.1" stroke-linecap="round"/><path d="M43 18 L40 49" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1.4" stroke-linecap="round"/><path d="M14 13 Q29 17 46 13" fill="none" stroke="#f7fbff" stroke-opacity=".8" stroke-width="2"/><path d="M20 60 Q31 65 42 60" fill="none" stroke="#e9f5fa" stroke-opacity=".56" stroke-width="1.3"/></svg>
+     <span class="focusCupSteam" id="focusCupSteam">〰</span><span class="focusCupTag" id="focusCupTag">KUPAYI SÜRÜKLE</span>
+    </button>
+    <div class="focusCoffeeMachine" id="focusCoffeeMachine" aria-label="Mini espresso makinesi"><div class="coffeeMachineTop"><i></i><b>MINI BREW</b><span class="coffeeMachineLamp"></span></div><div class="coffeeMachineFace"><div class="coffeeMachineDial"><i></i></div><div class="coffeeMachineButtons"><i></i><i></i><i></i></div><div class="coffeeMachineBadge">☕</div></div><div class="coffeeMachineHead"><span class="coffeeSpout"></span><span class="coffeeDrip" id="focusCoffeeDrip"></span></div><div class="coffeeMachineTray" id="focusCoffeeDropzone" aria-label="Kupayı buraya bırak"><span class="coffeeTrayGrill"></span><span class="coffeeTrayHint">KUPAYI BURAYA BIRAK</span></div><div class="coffeeMachineBase"></div><div class="coffeeMachineFoot left"></div><div class="coffeeMachineFoot right"></div></div>
+    <div class="focusCoffeeStatus" id="focusCoffeeStatus" role="status">Kupan rafta · Makineye sürükle</div><button type="button" class="focusCoffeeAction" id="focusCoffeeAction" onclick="mfaCoffeeAction()">☕ Kupayı doldur</button>
+   </div>
    <div class="focusOverlay">
     <div class="focusCopy"><div class="focusEyebrow">🌙 RAINY NIGHT · DEEP FOCUS</div><h3>Yavaşla.<br>Bir soruyla başla.</h3><p>Her çalışma oturumu küçük bir ilerlemedir. Zamanı takip et, molanı unutma ve kendine karşı nazik ol.</p><div class="focusQuote">“Büyük işler, her gün atılan küçük adımlarla tamamlanır.”</div><div class="focusDeskItems"><span class="focusBook">📖</span><span class="focusMug">☕<i class="focusSteam">〰</i><i class="focusSteam two">〰</i></span><span>🐈‍⬛</span></div></div>
     <div class="focusPanel">
      <div class="focusPanelHead"><div class="focusPanelBrand"><span class="focusPanelGlyph">✦</span><div><small>THE RAINY DESK</small><b>FOCUS SESSION</b></div></div><span class="focusLive" id="focusLiveState">● HAZIR</span></div>
      <div class="focusModeTabs"><button class="focusModeBtn active" id="focusModePomodoro" onclick="mfaFocusSetMode('pomodoro')">🍅 Pomodoro</button><button class="focusModeBtn" id="focusModeStopwatch" onclick="mfaFocusSetMode('stopwatch')">⏱ Serbest sayaç</button></div>
+     <div class="focusSoundBar" aria-label="İsteğe bağlı yağmur ambiyansı">
+      <button type="button" class="focusRainToggle" id="focusRainToggle" onclick="mfaRainToggle()" aria-pressed="false"><span class="focusRainIcon">🌧️</span><span><b>Yağmur sesi</b><small id="focusRainState">Kapalı · Sessiz çalışma</small></span><span class="focusRainSwitch" aria-hidden="true"><i></i></span></button>
+      <label class="focusSoundVolume" for="focusRainVolume"><span>SES</span><input id="focusRainVolume" type="range" min="0" max="100" value="32" oninput="mfaRainVolume(this.value)"><b id="focusRainVolumeValue">32%</b></label>
+     </div>
      <div class="focusDial" id="focusDial" style="--focus-angle:0deg"><div class="focusDialInner"><div class="focusPhase" id="focusPhase">ODAK ZAMANI</div><div class="focusClock" id="focusClock">25:00</div><div class="focusSubclock" id="focusSubclock">25 dakika çalışma · 5 dakika mola</div><div class="focusRoundChip"><span>ODAK TURU</span><b id="focusRoundCount">0 / 4</b></div></div></div>
      <div class="focusProgress"><span id="focusProgressBar"></span></div>
      <div class="focusControls"><button class="focusControl" id="focusMainBtn" onclick="mfaFocusToggle()">▶ Başlat</button><button class="focusControl secondary" onclick="mfaFocusReset()">↺ Sıfırla</button><button class="focusControl save" id="focusFinishBtn" onclick="mfaFocusFinish()">✓ Oturumu kaydet</button></div>
@@ -1716,6 +1798,7 @@ if(window.__mfaAutoNightInterval)clearInterval(window.__mfaAutoNightInterval);
 window.__mfaAutoNightInterval=setInterval(syncFocusTheme,60*1000);
 document.addEventListener('visibilitychange',syncFocusTheme);
 function renderFocusClock(){
+ updateCoffeeConsumption(Date.now());
  syncFocusTheme();
  const clock=document.getElementById('focusClock');if(!clock)return;
  const running=focusTimer.running;
@@ -1747,7 +1830,7 @@ function updateFocusStats(){
 }
 function setFocusStatus(message){focusStatus=message;const el=document.getElementById('focusStatus');if(el)el.textContent=message;}
 function stopTicker(){if(window.__mfaFocusTick){clearInterval(window.__mfaFocusTick);window.__mfaFocusTick=null;}}
-function tick(){if(!focusTimer.running)return; if(focusTimer.mode==='pomodoro'&&Date.now()>=focusTimer.deadline){focusTimer.remaining=0;focusTimer.running=false;stopTicker();if(focusTimer.phase==='focus'){
+function tick(){if(!focusTimer.running)return; if(focusTimer.mode==='pomodoro'&&Date.now()>=focusTimer.deadline){updateCoffeeConsumption(Date.now());focusTimer.remaining=0;focusTimer.running=false;stopTicker();if(focusTimer.phase==='focus'){
   const completed=focusTimer.duration;saveStudySession(completed,'Pomodoro');focusTimer.completedRounds++;
   focusTimer.phase=focusTimer.completedRounds%4===0?'long':'short';focusTimer.duration=focusTimer.phase==='long'?15*60:5*60;focusTimer.remaining=focusTimer.duration;focusTimer.deadline=0;
   setFocusStatus(focusTimer.completedRounds%4===0?'Dört odak turu tamamlandı. Uzun mola zamanı.':'Odak turu tamamlandı. Şimdi kısa bir mola ver.');
@@ -1755,13 +1838,13 @@ function tick(){if(!focusTimer.running)return; if(focusTimer.mode==='pomodoro'&&
  }renderFocusClock();}
 function saveStudySession(seconds,mode){seconds=Math.max(0,Math.floor(seconds||0));if(seconds<60){setFocusStatus('Kaydedilecek oturum için en az 1 dakika çalışmalısın.');return false;}const task=document.getElementById('focusTask')?.value||localStorage.getItem(FOCUS_TASK_KEY)||'';const subject=document.getElementById('focusSubject')?.value||focusSubject;focusSessions.push({date:dayKey(),seconds,task:task.trim(),subject,mode,createdAt:new Date().toISOString()});persistSessions();updateFocusStats();if(typeof window.mfaLocalSave==='function')window.mfaLocalSave();else persistSessions();return true;}
 window.mfaFocusToggle=function(){
- if(focusTimer.running){if(focusTimer.mode==='stopwatch'){focusTimer.elapsed+=Math.floor((Date.now()-focusTimer.startedAt)/1000);}else focusTimer.remaining=Math.max(0,Math.ceil((focusTimer.deadline-Date.now())/1000));focusTimer.running=false;stopTicker();setFocusStatus('Sayaç duraklatıldı. Hazır olduğunda devam edebilirsin.');renderFocusClock();return;}
+ if(focusTimer.running){updateCoffeeConsumption(Date.now());if(focusTimer.mode==='stopwatch'){focusTimer.elapsed+=Math.floor((Date.now()-focusTimer.startedAt)/1000);}else focusTimer.remaining=Math.max(0,Math.ceil((focusTimer.deadline-Date.now())/1000));focusTimer.running=false;coffeeState.lastDrinkAt=0;stopTicker();setFocusStatus('Sayaç duraklatıldı. Hazır olduğunda devam edebilirsin.');renderFocusClock();return;}
  if(focusTimer.mode==='pomodoro'){if(focusTimer.remaining<=0)focusTimer.remaining=focusTimer.duration;focusTimer.deadline=Date.now()+focusTimer.remaining*1000;}else{focusTimer.startedAt=Date.now();}
- focusTimer.running=true;setFocusStatus(focusTimer.phase==='focus'?'Odak başladı. Tek bir işe yönel.':'Molan başladı. Biraz dinlen.');stopTicker();window.__mfaFocusTick=setInterval(tick,250);renderFocusClock();
+ focusTimer.running=true;if(coffeeState.level>.03){if(!coffeeState.consumeDuration)coffeeState.consumeDuration=focusTimer.mode==='pomodoro'?Math.max(60,focusTimer.remaining):45*60;coffeeState.lastDrinkAt=Date.now();}setFocusStatus(focusTimer.phase==='focus'?'Odak başladı. Tek bir işe yönel.':'Molan başladı. Biraz dinlen.');stopTicker();window.__mfaFocusTick=setInterval(tick,250);renderFocusClock();
 };
-window.mfaFocusReset=function(){focusTimer.running=false;stopTicker();focusTimer.phase='focus';focusTimer.elapsed=0;focusTimer.duration=Number(document.getElementById('focusDuration')?.value||25)*60;focusTimer.remaining=focusTimer.duration;focusTimer.deadline=0;setFocusStatus('Sayaç sıfırlandı. Yeni bir tur için hazırsın.');renderFocusClock();};
-window.mfaFocusFinish=function(){let sec=0;if(focusTimer.mode==='stopwatch')sec=focusTimer.elapsed+(focusTimer.running?Math.floor((Date.now()-focusTimer.startedAt)/1000):0);else if(focusTimer.phase==='focus')sec=focusTimer.duration-(focusTimer.running?Math.max(0,Math.ceil((focusTimer.deadline-Date.now())/1000)):focusTimer.remaining);focusTimer.running=false;stopTicker();if(saveStudySession(sec,focusTimer.mode==='pomodoro'?'Pomodoro · erken bitiş':'Serbest sayaç')){setFocusStatus(`${prettyDuration(sec)} çalışma kaydedildi. Eline sağlık!`);focusTimer.phase='focus';focusTimer.elapsed=0;focusTimer.duration=Number(document.getElementById('focusDuration')?.value||25)*60;focusTimer.remaining=focusTimer.duration;focusTimer.deadline=0;}renderFocusClock();};
-window.mfaFocusSetMode=function(mode){if(!['pomodoro','stopwatch'].includes(mode))return;focusTimer.running=false;stopTicker();focusTimer.mode=mode;focusTimer.phase='focus';focusTimer.elapsed=0;focusTimer.duration=Number(document.getElementById('focusDuration')?.value||25)*60;focusTimer.remaining=focusTimer.duration;focusTimer.deadline=0;setFocusStatus(mode==='pomodoro'?'Odak ve mola sürelerini sırayla takip et.':'İstediğin kadar çalış; bitirdiğinde süreyi kaydet.');renderFocusClock();};
+window.mfaFocusReset=function(){updateCoffeeConsumption(Date.now());focusTimer.running=false;coffeeState.lastDrinkAt=0;stopTicker();focusTimer.phase='focus';focusTimer.elapsed=0;focusTimer.duration=Number(document.getElementById('focusDuration')?.value||25)*60;focusTimer.remaining=focusTimer.duration;focusTimer.deadline=0;setFocusStatus('Sayaç sıfırlandı. Yeni bir tur için hazırsın.');renderFocusClock();};
+window.mfaFocusFinish=function(){updateCoffeeConsumption(Date.now());let sec=0;if(focusTimer.mode==='stopwatch')sec=focusTimer.elapsed+(focusTimer.running?Math.floor((Date.now()-focusTimer.startedAt)/1000):0);else if(focusTimer.phase==='focus')sec=focusTimer.duration-(focusTimer.running?Math.max(0,Math.ceil((focusTimer.deadline-Date.now())/1000)):focusTimer.remaining);focusTimer.running=false;coffeeState.lastDrinkAt=0;stopTicker();if(saveStudySession(sec,focusTimer.mode==='pomodoro'?'Pomodoro · erken bitiş':'Serbest sayaç')){setFocusStatus(`${prettyDuration(sec)} çalışma kaydedildi. Eline sağlık!`);focusTimer.phase='focus';focusTimer.elapsed=0;focusTimer.duration=Number(document.getElementById('focusDuration')?.value||25)*60;focusTimer.remaining=focusTimer.duration;focusTimer.deadline=0;}renderFocusClock();};
+window.mfaFocusSetMode=function(mode){if(!['pomodoro','stopwatch'].includes(mode))return;updateCoffeeConsumption(Date.now());focusTimer.running=false;coffeeState.lastDrinkAt=0;stopTicker();focusTimer.mode=mode;focusTimer.phase='focus';focusTimer.elapsed=0;focusTimer.duration=Number(document.getElementById('focusDuration')?.value||25)*60;focusTimer.remaining=focusTimer.duration;focusTimer.deadline=0;setFocusStatus(mode==='pomodoro'?'Odak ve mola sürelerini sırayla takip et.':'İstediğin kadar çalış; bitirdiğinde süreyi kaydet.');renderFocusClock();};
 window.mfaFocusDurationChange=function(value){if(focusTimer.running)return;focusTimer.duration=Math.max(5,Number(value)||25)*60;focusTimer.remaining=focusTimer.duration;renderFocusClock();};
 window.mfaFocusSubjectChange=function(value){focusSubject=value;};
 window.mfaFocusTaskChange=function(value){try{localStorage.setItem(FOCUS_TASK_KEY,value);}catch(_){}};
@@ -1798,10 +1881,11 @@ if(!localStorage.getItem(V17_BANK_KEY)){
 window.MINIK_AKADEMI_V17={version:'17.0',physicsTopics:units.length,physicsQuestions:units.reduce((n,u)=>n+u.bank.length,0),uniquePhysicsStems:440,focusTimer:true,focusModes:['pomodoro','stopwatch']};
 window.MINIK_AKADEMI_V18={version:'18.0',nightModeOnTimer:true,focusDial:true,studyRoomScene:true};
 window.MINIK_AKADEMI_V19={version:'19.0',automaticNightHours:'19:00-07:00 local time',nightModeIncludesRunningTimer:true,photographicFocusRoom:true};
+window.MINIK_AKADEMI_V20={version:'20.0',optionalRainAmbience:true,completeNightPalette:true};
 })();
 </script>
 
-</body></html>
+
 <script id="minik-akademi-v14-commentary">
 (() => {
   const commentaryData = [[{"q":"Bir yolcu, hareket hâlindeki otobüste yanındaki arkadaşının koltuğunda hiç yer değiştirmediğini söylüyor. Kaldırımdaki biri ise ikisinin de hareket ettiğini gözlüyor. Bu iki gözlem neden çelişmez?","opts":["Hareket, seçilen referans noktasına göre tanımlanır.","Otobüs içindeki gözlem her zaman yanlıştır.","Bir cisim aynı anda yalnızca durgun olabilir."],"ans":0,"why":"Arkadaşına göre yolcu durgundur; yola göre ise otobüsle birlikte hareket eder. Hareket ve durgunluk, seçilen referans sistemine bağlıdır."},{"q":"Bir öğrenci, farklı bardakların içindeki aynı miktar sıcak suyun soğuma süresini karşılaştırıyor. Bardak türünün etkisini adil biçimde araştırmak için hangi koşulu sabit tutmalıdır?","opts":["Her bardaktaki suyun başlangıç sıcaklığını ve miktarını","Her bardaktaki soğuma süresini","Bardakların malzemesini"],"ans":0,"why":"Bardak türü araştırmacının değiştirdiği değişkendir. Başlangıç sıcaklığı ve su miktarı gibi etkenler aynı tutulursa farkın bardak türünden kaynaklanıp kaynaklanmadığı daha güvenilir yorumlanır."},{"q":"Bir koşucu 400 metrelik pistte tam bir tur atıp başladığı noktaya dönüyor. Bu koşu için hangi ifade doğrudur?","opts":["Alınan yol 400 m, yer değiştirme 0 m olur.","Alınan yol 0 m, yer değiştirme 400 m olur.","Alınan yol ve yer değiştirme 400 m olur."],"ans":0,"why":"Alınan yol izlenen toplam uzunluktur. Yer değiştirme başlangıç ve bitiş konumları arasındaki yönlü değişimdir; başlangıca dönüldüğü için sıfırdır."},{"q":"Bir ölçüm cetvelinin en küçük bölmesi 1 mm iken öğrenci uzunluğu 12,34567 cm hassasiyetinde ölçtüğünü yazıyor. Bu sonuçla ilgili en doğru yorum hangisidir?","opts":["Araç bu kadar basamağı desteklemediği için sonuç gereğinden hassas yazılmıştır.","Ondalık basamak sayısı arttıkça ölçüm mutlaka daha doğrudur.","Cetvel kullanıldığında ölçüm hatası oluşmaz."],"ans":0,"why":"Ölçümün anlamlı hassasiyeti kullanılan aracın çözünürlüğüyle sınırlıdır. Desteklenmeyen basamaklar ölçümün gerçekte olduğundan daha hassas görünmesine yol açar."}],[{"q":"Aynı koşullarda ölçülen X örneğinin kütlesi 120 g, hacmi 60 cm³; Y örneğinin kütlesi 160 g, hacmi 80 cm³. Bu iki örnek için hangi çıkarım yapılabilir?","opts":["Özkütleleri eşittir; ikisi de 2 g/cm³ değerindedir.","Y’nin özkütlesi X’ten büyüktür.","X’in özkütlesi Y’den büyüktür."],"ans":0,"why":"Özkütle kütlenin hacme oranıdır. X için 120/60 = 2, Y için 160/80 = 2 g/cm³ bulunur; kütle ve hacim aynı oranda arttığı için özkütle değişmemiştir."},{"q":"Yağmurlu havada su damlalarının cilalı ve suyu iyi ıslatmayan bir yüzeyde boncuk gibi toplandığı görülüyor. Bu gözlemi en iyi hangi etkileşim açıklar?","opts":["Su molekülleri arasındaki kohezyonun belirgin olması","Su ile yüzey arasındaki adezyonun her zaman çok büyük olması","Suyun kütlesinin ortadan kalkması"],"ans":0,"why":"Kohezyon aynı tür moleküllerin birbirini çekmesidir. Yüzeye tutunma etkisi zayıf kaldığında su damlaları kendi aralarında bir arada kalıp küreselleşmeye yaklaşır."},{"q":"Bir cam borunun çapı küçültüldüğünde, suyun boru içinde daha belirgin biçimde yükseldiği gözleniyor. Bu olay hangi kavramla ilişkilidir?","opts":["Kılcallık","Eylemsizlik","Elektriklenme"],"ans":0,"why":"Kılcallık, sıvının ince borularda yükselmesi veya alçalmasıdır. Sıvı ile boru yüzeyi arasındaki adezyon ve sıvı içindeki kohezyon bu davranışta rol oynar."},{"q":"Aynı maddeden yapılmış, benzer biçimli bir modelin tüm doğrusal boyutları iki katına çıkarılıyor. Modelin hacmi ve bir kesit alanı nasıl değişir?","opts":["Hacim 8 katına, kesit alanı 4 katına çıkar.","Hacim 4 katına, kesit alanı 8 katına çıkar.","İkisi de 2 katına çıkar."],"ans":0,"why":"Benzer cisimlerde alan uzunluğun karesiyle, hacim küpüyle değişir. Boyut iki katına çıkınca alan 2² = 4, hacim 2³ = 8 kat olur."}],[{"q":"Virajı sabit süratle dönen bir otomobilin sürati değişmiyor. Buna rağmen otomobilin ivmesi sıfır değildir. Bunun nedeni nedir?","opts":["Hızın yönünün değişmesi","Otomobilin kütlesinin virajda artması","Süratin sabit olmasının ivmeyi her zaman artırması"],"ans":0,"why":"Hız vektörel bir niceliktir. Sürat sabit kalsa bile virajda yön değiştiği için hız değişir; hız değişimi de ivme bulunduğunu gösterir."},{"q":"Otobüs aniden fren yaptığında ayakta duran yolcuların gövdeleri öne doğru hareket etme eğilimi gösteriyor. Bu durum hangi ilkeyle açıklanır?","opts":["Eylemsizlik: cisim mevcut hareket durumunu korumaya eğilimlidir.","Etki-tepki kuvvetleri aynı cisim üzerinde oluşur.","Sürtünme kuvveti her zaman hareket yönündedir."],"ans":0,"why":"Otobüs yavaşlarken yolcuların gövdeleri önceki hareketini sürdürme eğilimindedir. Bu, Newton’ın birinci yasası olan eylemsizliktir."},{"q":"Yüzen bir kişi elleriyle suyu geriye doğru iterken ileri doğru hareket ediyor. Bu hareketin temel açıklaması hangisidir?","opts":["Kişinin suya uyguladığı kuvvete karşı suyun kişiye zıt yönde kuvvet uygulaması","Kişinin ağırlığının aniden sıfırlanması","Suyun yalnızca hareket eden cisimlere kuvvet uygulaması"],"ans":0,"why":"Kişi suya geriye doğru kuvvet uygular; su da kişiye eşit büyüklükte ve zıt yönde kuvvet uygular. Etki ve tepki farklı cisimler üzerinde oluşur."},{"q":"Bir bisikletli dairesel parkurda bir turu tamamlayıp başlangıç noktasına dönüyor. Tur boyunca sürati sabit olsa bile ortalama hızı neden sıfırdır?","opts":["Toplam yer değiştirmesi sıfır olduğu için","Toplam aldığı yol sıfır olduğu için","Hareket süresi sıfır olduğu için"],"ans":0,"why":"Ortalama hız, yer değiştirmenin zamana oranıdır. Başlangıç ve bitiş noktaları aynı olduğundan yer değiştirme sıfırdır; alınan yol ise sıfır değildir."}],[{"q":"Bir öğrenci, kitabı yerden kaldırdıktan sonra yatay bir koridorda aynı yükseklikte sabit tutarak yürüyor. Kitaba uyguladığı yukarı yönlü taşıma kuvvetinin yaptığı fiziksel iş neden sıfır kabul edilir?","opts":["Kuvvet ile yer değiştirme birbirine dik olduğu için","Kitabın kütlesi olmadığı için","Öğrenci hareket ettiği için tüm kuvvetlerin işi sıfır olduğu için"],"ans":0,"why":"Fiziksel iş, kuvvetin yer değiştirme doğrultusundaki bileşeniyle ilişkilidir. Yukarı yönlü kuvvet yatay yer değiştirmeye dik olduğundan bu kuvvetin yaptığı iş sıfırdır."},{"q":"Sürtünmenin ihmal edildiği bir rampadan aşağı inen kızak hızlanıyor. Kızağın mekanik enerjisi için hangi yorum doğrudur?","opts":["Potansiyel enerji azalırken kinetik enerji artar; toplam mekanik enerji korunur.","Hem potansiyel hem kinetik enerji sürekli azalır.","Enerji yoktan var olduğu için kinetik enerji artar."],"ans":0,"why":"Kızak alçalırken yer çekimi potansiyel enerjisi kinetik enerjiye dönüşür. Sürtünme gibi mekanik enerjiyi azaltan etkiler ihmal edildiğinde toplam mekanik enerji sabit kalır."},{"q":"Aynı kütlede iki öğrenci aynı merdiveni çıkıyor. İkisi de aynı yüksekliğe ulaşıyor ancak biri bunu daha kısa sürede yapıyor. Hangisinin ortalama gücü daha büyüktür?","opts":["Merdiveni daha kısa sürede çıkanın","İkisinin de yaptığı iş aynı olduğundan güçleri kesinlikle eşittir.","Daha uzun sürede çıkanın"],"ans":0,"why":"Aynı yüksekliğe ve aynı kütleyle çıkıldığında yapılan iş aynıdır. Güç, işin zamana oranı olduğundan aynı işi daha kısa sürede yapanın gücü daha büyüktür."},{"q":"Bir makineye 1000 J enerji veriliyor ve bunun 800 J’lük bölümü istenen yararlı işe dönüşüyor. Makinenin verimi kaçtır?","opts":["%80","%20","%125"],"ans":0,"why":"Verim = yararlı enerji / alınan toplam enerji × 100’dür. 800/1000 × 100 = %80 bulunur; kalan enerji farklı biçimlerde çevreye aktarılır."}],[{"q":"Saf bir madde erime sıcaklığında erirken ısı almaya devam ediyor. Bu sırada sıcaklığının bir süre sabit kalması nasıl açıklanır?","opts":["Alınan enerjinin hâl değişimi için kullanılması","Maddenin artık enerji almaması","Termometrenin mutlaka bozulması"],"ans":0,"why":"Hâl değişimi sırasında alınan enerji tanecikler arası etkileşimleri değiştirmeye harcanır. Bu nedenle saf madde belirli basınçta erirken sıcaklık sabit kalabilir."},{"q":"Aynı maddeden yapılmış iki kaptaki suyun sıcaklığı eşit; kaplardan birinde diğerinden daha fazla su bulunuyor. Hangi yorum en uygundur?","opts":["Sıcaklıkları eşit olsa da su miktarları farklı olduğundan iç enerjileri aynı olmak zorunda değildir.","Sıcaklıkları eşit olan bütün su örneklerinin iç enerjisi kesinlikle eşittir.","Az su bulunan kaptaki su mutlaka daha sıcaktır."],"ans":0,"why":"Sıcaklık bir durum ölçüsüdür; toplam iç enerji ise madde miktarı gibi etkenlere de bağlıdır. Aynı sıcaklık, farklı miktardaki örneklerin toplam iç enerjisinin eşit olmasını garanti etmez."},{"q":"Bir termosun iç yüzeyinin parlak yapılması ve iki duvarı arasında boşluk bulunması ısı alışverişini nasıl azaltır?","opts":["Parlak yüzey ışınımla, boşluk ise iletim ve taşınımla ısı aktarımını azaltır.","Parlak yüzey yalnızca kütleyi azaltır.","Boşluk, ısının termos içinde daha hızlı dolaşmasını sağlar."],"ans":0,"why":"Parlak yüzey ısıl ışınımı yansıtarak azaltır. Duvarlar arasındaki vakum veya düşük yoğunluklu boşluk da iletim ve taşınımı sınırlar."},{"q":"Uzun metal köprülerde sıcak havalarda genleşmeye yer bırakacak boşluklar tasarlanır. Bu boşlukların temel amacı nedir?","opts":["Sıcaklık artınca metal uzayabildiği için yapıda aşırı gerilme ve şekil bozulmasını önlemek","Köprünün kütlesini sıfırlamak","Metalin özkütlesini her koşulda artırmak"],"ans":0,"why":"Sıcaklık artışı çoğu katının boyutlarını artırır. Genleşme boşlukları, uzama için alan bırakarak yapısal zorlanmayı azaltır."}],[{"q":"Karda yürürken geniş tabanlı kar ayakkabısı kullanıldığında kişinin kara daha az batmasının temel nedeni nedir?","opts":["Ağırlık daha geniş alana dağıldığı için basıncın azalması","Kişinin ağırlığının ortadan kalkması","Karın yoğunluğunun aniden artması"],"ans":0,"why":"Katı basıncı, yüzeye dik kuvvetin temas alanına oranıdır. Ağırlık yaklaşık aynı kalırken temas alanı büyür, basınç azalır."},{"q":"Şekilleri farklı iki kapta aynı sıvı bulunuyor. Kapların tabanından aynı derinlikte seçilen iki noktanın sıvı basınçları için ne söylenebilir?","opts":["Aynı sıvı ve aynı derinlikte oldukları için basınçları eşittir.","Geniş kapta basınç mutlaka daha büyüktür.","Kabın şekli basıncı tek başına belirler."],"ans":0,"why":"Durgun sıvı basıncı sıvının yoğunluğuna, derinliğe ve yer çekimi ivmesine bağlıdır. Aynı sıvıda aynı derinlikte kap şekli basıncı değiştirmez."},{"q":"Çelikten yapılmış büyük bir gemi, çelikten çok daha düşük yoğunluklu su üzerinde yüzebiliyor. Bu durum nasıl açıklanır?","opts":["Geminin içindeki hava nedeniyle geminin ortalama yoğunluğu düşer ve yeterli suyu yer değiştirerek dengelenir.","Çelik suya batmadığı için gemi yüzebilir.","Gemiye kaldırma kuvveti yalnızca hareket ederken etki eder."],"ans":0,"why":"Yüzen cisimlerde kaldırma kuvveti ağırlığa eşittir. Geminin hacmi içindeki hava ile birlikte düşünüldüğünde ortalama yoğunluğu düşer ve gemi yeterli miktarda suyu yer değiştirir."},{"q":"Hidrolik kaldıracın küçük pistonuna kuvvet uygulandığında büyük pistonda daha büyük kuvvet elde edilebilmesinin nedeni nedir?","opts":["Basıncın kapalı sıvı içinde iletilmesi ve büyük piston alanının daha büyük kuvvet oluşturması","Sıvının enerjiyi yoktan üretmesi","Büyük pistonun her zaman daha hızlı hareket etmesi"],"ans":0,"why":"Pascal ilkesine göre uygulanan basınç sıvıya iletilir. Basınç = kuvvet/alan olduğundan daha büyük alanlı pistonda daha büyük kuvvet oluşabilir; bunun karşılığında piston daha az yol alır."}],[{"q":"Saçına sürtülen bir balon küçük kâğıt parçalarını çekiyor ve nötr bir duvara da tutunabiliyor. Duvarın toplam yükü değişmeden çekim oluşabilmesinin nedeni nedir?","opts":["Yüklü balon duvardaki yük dağılımını kutuplaştırır.","Duvar mutlaka balonla aynı yükü kazanır.","Nötr cisimler elektriksel etkileşim gösteremez."],"ans":0,"why":"Yüklü cisim, nötr cismin içindeki yük dağılımını az da olsa değiştirir. Yakın tarafta zıt işaretli yüklerin etkisi baskın hâle geldiğinden net çekim oluşabilir."},{"q":"Aralarında belirli uzaklık bulunan iki noktasal yükün uzaklığı iki katına çıkarılıyor. Yük miktarları değişmediğine göre elektriksel kuvvetin büyüklüğü nasıl değişir?","opts":["İlk değerinin dörtte birine düşer.","İki katına çıkar.","Değişmez."],"ans":0,"why":"Coulomb yasasına göre kuvvet uzaklığın karesiyle ters orantılıdır. Uzaklık iki katına çıkarsa kuvvet 2² = 4 kat azalır."},{"q":"Nötr iletken bir küreye negatif yüklü bir cisim dokunmadan yaklaştırılıyor. Kürenin yakın tarafında pozitif, uzak tarafında negatif yük fazlalığı oluşması hangi olaydır?","opts":["Etki ile elektriklenme ve yüklerin ayrışması","Sürtünme ile elektriklenme","Kürenin toplam yükünün kendiliğinden artması"],"ans":0,"why":"Yaklaştırılan yük, iletkendeki serbest yüklerin yer değiştirmesine neden olur. Kürenin toplam yükü değişmez; yalnızca yükler farklı bölgelere ayrılır."},{"q":"Negatif yüklü iletken bir cisim topraklandığında fazla elektronların bir bölümü Dünya’ya geçebiliyor. Bu gözlem topraklama hakkında ne gösterir?","opts":["Topraklama, cisim ile Dünya arasında yük alışverişi sağlayabilir.","Topraklama yalnızca yalıtkanlarda yük aktarır.","Topraklama cismin kütlesini belirgin biçimde artırır."],"ans":0,"why":"Dünya çok büyük bir yük alışveriş ortamı gibi davranır. İletken ile Dünya arasında uygun yol oluştuğunda fazla yükler aktarılabilir."}],[{"q":"Evdeki lambalardan biri kapatıldığında diğer odalardaki lambalar yanmaya devam ediyor. Ev tesisatında hangi bağlantı biçiminin kullanıldığını gösterir?","opts":["Paralel bağlantı","Tek bir seri bağlantı","Açık devre"],"ans":0,"why":"Paralel kollarda her cihazın devre yolu bağımsızdır. Bir kol kapatıldığında diğer kollardan akım geçmeye devam edebilir."},{"q":"Pille çalışan seri bağlı üç ampulden biri yerinden çıkarıldığında diğerleri de sönüyor. Bunun nedeni nedir?","opts":["Seri devrede tek akım yolu bulunduğundan yolun kesilmesi","Pilin geriliminin anında sonsuz olması","Ampullerin ışık üretmek için birbirine manyetik kuvvet uygulaması"],"ans":0,"why":"Seri devrede elemanlar aynı akım yolunu paylaşır. Bir eleman çıkarıldığında devre açık hâle gelir ve akım yolu kesilir."},{"q":"Sıcaklığı değişmeyen ohmik bir iletkene uygulanan gerilim sabit tutulurken direnci iki katına çıkarılıyor. Akım nasıl değişir?","opts":["Yarıya iner.","İki katına çıkar.","Değişmez."],"ans":0,"why":"Ohm yasasına göre I = V/R. Gerilim sabitken direnç iki katına çıkarsa akım yarıya iner."},{"q":"Bir elektromıknatısın bobinindeki sarım sayısı artırılıyor ve akım aynı tutuluyor. Genel olarak manyetik alanın şiddeti nasıl etkilenir?","opts":["Artma eğilimi gösterir.","Kesinlikle sıfırlanır.","Sarım sayısından bağımsız olarak her zaman azalır."],"ans":0,"why":"Uygun koşullarda bobin sarım sayısının artırılması manyetik alanı güçlendirir. Elektromıknatısın etkisi akım ve sarım sayısı gibi etkenlere bağlıdır."}],[{"q":"Bir kaynağın titreşim frekansı 4 Hz’den 8 Hz’ye çıkarılıyor. Periyot için hangi ifade doğrudur?","opts":["Periyot yarıya iner.","Periyot iki katına çıkar.","Periyot değişmez."],"ans":0,"why":"Periyot ve frekans birbirinin tersidir: T = 1/f. Frekans iki katına çıktığında bir titreşimin süresi yarıya iner."},{"q":"Uzay boşluğunda bir patlama gerçekleştiğinde sesin Dünya’daki bir gözlemciye ulaşmamasının nedeni nedir?","opts":["Ses mekanik dalga olduğu için yayılmak için maddesel ortama ihtiyaç duyar.","Ses yalnızca gündüz yayılır.","Boşlukta ışık da yayılamaz."],"ans":0,"why":"Ses, ortam taneciklerinin titreşimiyle yayılan mekanik bir dalgadır. Boşlukta titreşimi aktaracak tanecikler bulunmadığından ses yayılmaz; ışık ise elektromanyetik dalga olduğu için boşlukta ilerleyebilir."},{"q":"Aynı ipte yayılan bir dalganın frekansı iki katına çıkarılıyor. İpin ve gerilmenin değişmediği durumda dalga hızı sabit kabul edilirse dalga boyu nasıl değişir?","opts":["Yarıya iner.","İki katına çıkar.","Dört katına çıkar."],"ans":0,"why":"Dalga hızı v = λf bağıntısıyla verilir. Aynı ortamda hız sabitken frekans iki katına çıkarsa dalga boyu yarıya düşer."},{"q":"Bir sınıfta yankıyı azaltmak için duvarlara ses yutucu paneller yerleştiriliyor. Bu panellerin temel etkisi nedir?","opts":["Ses enerjisinin bir bölümünü soğurarak yansımayı azaltmak","Sesin frekansını her koşulda sıfırlamak","Havadaki ses hızını sonsuza çıkarmak"],"ans":0,"why":"Yankı, sesin yüzeylerden yansıyıp gecikmeli olarak duyulmasıdır. Ses yutucu malzemeler ses enerjisinin bir bölümünü soğurur ve yansıyan sesin şiddetini azaltır."}],[{"q":"Bir öğrenci düzlem aynanın 2 m önünde duruyor. Öğrencinin görüntüsü aynanın arkasında kaç metre uzakta oluşur ve öğrenci ile görüntüsü arasındaki uzaklık kaç metredir?","opts":["Aynanın arkasında 2 m; aralarındaki uzaklık 4 m","Aynanın arkasında 4 m; aralarındaki uzaklık 2 m","Aynanın arkasında 1 m; aralarındaki uzaklık 3 m"],"ans":0,"why":"Düzlem aynada görüntünün aynaya uzaklığı cismin aynaya uzaklığına eşittir. Cisim ve görüntü aynanın zıt taraflarında olduğundan aralarındaki toplam uzaklık 2 + 2 = 4 m olur."},{"q":"Araçların yan aynalarında tümsek ayna kullanılmasının temel avantajı nedir?","opts":["Daha geniş görüş alanı sağlaması","Her zaman cisimden büyük görüntü vermesi","Görüntüyü gerçek ve ters oluşturması"],"ans":0,"why":"Tümsek aynalar ışığı dağıtır ve geniş bir alanı gösterir. Görüntü sanal, düz ve küçüktür; bu sayede sürücü daha geniş bir bölgeyi görebilir."},{"q":"Su dolu bir bardağın içindeki pipet, su yüzeyinde kırılmış gibi görünüyor. Bu görünüşün temel nedeni nedir?","opts":["Işığın hava ve su arasında geçerken kırılması","Pipetin su içinde fiziksel olarak bükülmesi","Ses dalgalarının ışığı eğmesi"],"ans":0,"why":"Işık hava ve su gibi farklı ortamlara geçerken hızı değişir ve çoğu geliş açısında doğrultusu da değişir. Göz, ışığı doğrusal uzantısında algıladığı için pipet yer değiştirmiş gibi görünür."},{"q":"Mat bir duvarın farklı noktalarından yansıyan ışık pek çok yönde dağılır. Bu nedenle duvarı farklı konumlardan görebiliriz. Olayın adı nedir?","opts":["Dağınık yansıma","Tam yansıma","Işığın soğurulmadan yok olması"],"ans":0,"why":"Pürüzlü yüzeylerde yüzey normalleri farklı yönlerde olduğundan yansıyan ışınlar birçok yöne dağılır. Her noktada yansıma yasası geçerlidir; yalnızca yüzeyin yönelimi değişir."}],[{"q":"Bir metal yüzeye düşürülen ışığın frekansı, elektron koparmak için gereken eşik frekansın altında kalıyor. Işığın şiddeti artırılırsa ne beklenir?","opts":["Eşik frekans aşılmadığı için fotoelektron çıkışı yine gerçekleşmez.","Her durumda daha enerjik elektronlar çıkar.","Metal mutlaka erir."],"ans":0,"why":"Fotoelektrik olayda elektron koparabilmek için foton enerjisinin eşik değeri aşması gerekir. Frekans eşik değerin altındaysa yalnızca ışık şiddetini artırmak bu koşulu sağlamaz."},{"q":"Eşik frekansın üzerindeki ışığın frekansı artırıldığında, fotoelektrik olayda kopan elektronların maksimum kinetik enerjisi nasıl etkilenir?","opts":["Artar.","Azalır.","Kesinlikle değişmeden kalır."],"ans":0,"why":"Foton enerjisi E = h·f bağıntısıyla frekansa bağlıdır. Eşik frekansın üzerindeki frekans artışı, elektronlara aktarılabilecek enerjiyi ve maksimum kinetik enerjiyi artırır."},{"q":"Bir LED lambanın ve bir güneş hücresinin enerji dönüşümleri hangi seçenekte doğru verilmiştir?","opts":["LED: elektrikten ışığa; güneş hücresi: ışıktan elektriğe","LED: ışıktan sese; güneş hücresi: elektrikten ısıya","İkisi de yalnızca ısıyı elektriğe dönüştürür."],"ans":0,"why":"LED, yarı iletken yapısında elektrik enerjisini ışığa dönüştürür. Güneş hücresi ise ışık enerjisinden elektrik enerjisi elde eder."},{"q":"Bir hastanede kemik görüntülemede X-ışınları, bazı yumuşak dokuların incelenmesinde ise ultrason kullanılabiliyor. Bu iki yöntemi ayıran temel fiziksel fark nedir?","opts":["X-ışınları elektromanyetik ışınım; ultrason ise yüksek frekanslı ses dalgalarıdır.","İkisi de yalnızca görünür ışık kullanır.","Ultrason boşlukta yayılan elektromanyetik dalgadır."],"ans":0,"why":"X-ışınları elektromanyetik ve iyonlaştırıcı ışınımdır. Ultrason, maddesel ortamda yayılan yüksek frekanslı mekanik ses dalgalarından yararlanır."}]];
@@ -2221,6 +2305,219 @@ if(window.MINIK_AKADEMI_V15){
 }
 window.MINIK_AKADEMI_V16={version:'16.0',topics:allUnits.length,physicsTopics:allUnits.filter(u=>u.subject==='physics').length,chemistryTopics:allUnits.filter(u=>u.subject==='chemistry').length,biologyTopics:allUnits.filter(u=>u.subject==='biology').length,questions:allUnits.reduce((n,u)=>n+u.bank.length,0),newOriginalQuestions:added,questionsPerTopic:40,officialSources:true};
 window.render();
+})();
+</script>
+
+<style id="minik-akademi-v20-night-complete-and-rain-controls">
+/* Optional rain ambience controls */
+.focusSoundBar{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(220,231,244,.14);border-radius:14px;background:rgba(5,13,24,.40);box-shadow:inset 0 1px rgba(255,255,255,.04)}
+.focusRainToggle{display:flex;align-items:center;gap:9px;min-width:0;padding:0;background:transparent;color:#e7edf5;text-align:left}
+.focusRainIcon{width:32px;height:32px;flex:none;display:grid;place-items:center;border-radius:10px;background:rgba(129,164,194,.13);font-size:17px}
+.focusRainToggle b,.focusRainToggle small{display:block}.focusRainToggle b{font-size:11px;letter-spacing:.01em;color:#f0e6d5}.focusRainToggle small{margin-top:3px;font-size:9px;color:#9aabbd}
+.focusRainSwitch{width:35px;height:20px;flex:none;margin-left:4px;padding:3px;border:1px solid #ffffff2a;border-radius:30px;background:#344357;transition:background .2s,border-color .2s}
+.focusRainSwitch i{display:block;width:12px;height:12px;border-radius:50%;background:#d5deea;transition:transform .2s,background .2s}
+.focusRainToggle[aria-pressed="true"] .focusRainSwitch{background:#b78c5e;border-color:#e8c99c66}.focusRainToggle[aria-pressed="true"] .focusRainSwitch i{transform:translateX(14px);background:#fff4df}
+.focusSoundVolume{display:flex;align-items:center;gap:7px;flex:none;color:#98aabd;font-size:8px;letter-spacing:.12em;font-weight:900}
+.focusSoundVolume input{width:78px;height:4px;accent-color:#d5b37c;cursor:pointer}.focusSoundVolume b{min-width:28px;color:#e5d2b3;font-size:9px;font-variant-numeric:tabular-nums;letter-spacing:0}
+@media(max-width:650px){.focusSoundBar{gap:6px;margin:0 0 8px;padding:8px 9px}.focusRainIcon{width:28px;height:28px;font-size:15px}.focusRainToggle{gap:6px}.focusRainToggle b{font-size:10px}.focusRainToggle small{font-size:8px}.focusSoundVolume{gap:4px;font-size:7px}.focusSoundVolume input{width:54px}}
+
+/* A full night palette: remove white surfaces across every page, including inline-styled cards. */
+body.mfa-night{background:radial-gradient(ellipse at 50% 0%,#17243a 0%,#0b111d 48%,#070b12 100%)!important;color:#dce5f0!important;color-scheme:dark;transition:background .35s,color .35s}
+body.mfa-night .app,body.mfa-night #extraPage,body.mfa-night .routePage,body.mfa-night .main,body.mfa-night .layout{color:#dce5f0!important}
+body.mfa-night header{border-color:#263246!important}
+body.mfa-night .brand h1,body.mfa-night .pageHead h2,body.mfa-night .unithead h2,body.mfa-night .panel h3,body.mfa-night .pageCard h3,body.mfa-night .courseCard h3,body.mfa-night .stat b,body.mfa-night .focusStatHead h3,body.mfa-night .noteEntry h4,body.mfa-night .accountModal h2{color:#e7edf6!important}
+body.mfa-night .brand small,body.mfa-night .pageHead p,body.mfa-night .intro,body.mfa-night .tiny,body.mfa-night .unithead small,body.mfa-night .topic small,body.mfa-night .stat small,body.mfa-night .panel p,body.mfa-night .pageCard p,body.mfa-night .courseCard p,body.mfa-night .metricCard small,body.mfa-night .reportRow,body.mfa-night .noteEntry p,body.mfa-night .emptyState,body.mfa-night .footer{color:#9eacbe!important}
+body.mfa-night .sideNav{background:rgba(7,12,21,.98)!important;border-color:#283449!important;box-shadow:10px 0 40px #0005}
+body.mfa-night .navBrand b,body.mfa-night .navSection,body.mfa-night .subjectItem,body.mfa-night .navItem{color:#b8c5d5!important}
+body.mfa-night .navBrand small,body.mfa-night .subjectItem small{color:#8494a8!important}
+body.mfa-night .navLogo,body.mfa-night .brand .logo{background:linear-gradient(135deg,#34384b,#29374a)!important}
+body.mfa-night .navItem:hover,body.mfa-night .subjectItem:hover{background:#172438!important}
+body.mfa-night .navItem.active,body.mfa-night .navItem.focusNavItem.active{background:linear-gradient(100deg,#1b293d,#252338)!important;color:#f2d6a5!important;box-shadow:inset 3px 0 #d7b77c!important}
+body.mfa-night .navDivider{background:#263246!important}
+body.mfa-night .navBottom{background:linear-gradient(135deg,#182335,#211f31)!important;color:#c9d4e1!important}
+body.mfa-night .accountBtn,body.mfa-night .points,body.mfa-night .localSavePill{background:#131e2e!important;border-color:#2c3b51!important;color:#d7e0eb!important;box-shadow:none!important}
+body.mfa-night .app :is(.panel,.stat,.pageCard,.metricCard,.courseCard,.topicMapCard,.focusStatCard,.dashCard,.reportCard,.noteEntry,.achievement,.qcard,.lessonpart,.accountModal,.notesBox,.mfaSourceCard,.labCard,.labMetric,.labNoteArea,.motionGraphCard,.forceHuntSection,.forceHuntBoardPanel,.forceHuntPalettePanel,.topicLabPanel,.topicLabResult,.topicLabNote,.labV8MissionHead,.labV8Prediction,.labV8Feedback,.labV8CompareResult,.mfaV10Guide,.mfaV10Observation,.mfaV10Snapshot,.mfaV10HistoryItem,.commentaryCard,.courseLessonBanner,.quickTile,.quoteCard,.wrongCard,.formulaCardV5,.formulaEquationBox,.formulaQuickReview,.pageCallout,.reportCard,.focusHistoryRow){background:#111b2a!important;border-color:#29364a!important;color:#dbe4ef!important;box-shadow:0 12px 38px #0003!important}
+body.mfa-night .app :is(.hero){background:linear-gradient(115deg,#1b293d,#25253b 58%,#182d2a)!important;border:1px solid #344052!important;color:#e2e9f3!important}
+body.mfa-night .app :is(.topic,.tab,.quizpick,.checkitem,.option,.focusHistoryRow,.reportBar,.weekDay,.formulaChip,.formulaToggle,.mfaV10Choice,.labV8Choice,.labV8QuizOption,.commentaryOption,.forceTypeBtn,.topicLabControl,.labControl){background:#1a2638!important;border-color:#2c3b51!important;color:#c8d3e0!important}
+body.mfa-night .app :is(.topic:hover,.topic.active,.tab:hover,.quizpick:hover,.option:hover){background:#22324a!important;color:#edf2f8!important}
+body.mfa-night .app :is(.topic .n,.unitemoji,.courseEmoji,.qtIcon,.badgeState,.topicMapNum){background:#202d42!important;color:#e4d5b8!important}
+body.mfa-night .app :is(.formula,.formulaInfoBlock,.formulaConfuse,.formulaWarning,.daily,.example,.traps,.pageCallout,.mfaSourceNote,.authMsg,.labResult,.topicLabInsight,.topicLabFormula,.mfaV10Feedback,.commentaryFeedback){background:#1a2638!important;border-color:#344158!important;color:#d6dfeb!important}
+body.mfa-night .app :is(.feedback,.qmeta,.mfaTestHint,.mfaQuestionSource,.commentarySource,.courseMeta,.pageEyebrow,.focusStatHead small){color:#9aabc0!important}
+body.mfa-night .app :is(.option.good,.commentaryOption.correct,.mfaV10Choice.correct,.labV8Choice.correct){background:#17372f!important;border-color:#397b62!important;color:#d9f5e7!important}
+body.mfa-night .app :is(.option.bad,.commentaryOption.wrong,.mfaV10Choice.wrong,.labV8Choice.wrong){background:#3a202b!important;border-color:#7d4657!important;color:#ffe1e8!important}
+body.mfa-night .app :is(.btn.secondary,.accountBtn,.tab,.quizpick,.focusRainToggle){color:#dbe5f0!important}
+body.mfa-night .app :is(.btn.secondary){background:#1b293d!important;border-color:#34445c!important;box-shadow:none!important}
+body.mfa-night .app :is(.tab.active,.quizpick.active){background:#78628f!important;color:#fff!important;border-color:#9881b2!important}
+body.mfa-night .app :is(.progress,.focusGoalLine,.labTrack,.labTrackLine,.reportBar){background:#263449!important}
+body.mfa-night .app :is(input:not([type=range]),select,textarea),body.mfa-night .accountModal input,body.mfa-night .notesBox textarea{background:#101a2a!important;border-color:#34435a!important;color:#e3eaf2!important;caret-color:#e9c994}
+body.mfa-night .app input::placeholder,body.mfa-night .app textarea::placeholder,body.mfa-night .accountModal input::placeholder{color:#8292a7!important}
+body.mfa-night .app :is(button:not(.btn):not(.navItem):not(.subjectItem)){color:inherit}
+body.mfa-night .app a,body.mfa-night .accountModal a{color:#c6b5f0!important}
+body.mfa-night .modalShade{background:rgba(1,5,12,.78)!important}
+body.mfa-night .accountModal{background:#101a29!important;border:1px solid #344158!important;color:#dbe4ef!important}
+body.mfa-night .authMsg{background:#1b293d!important;color:#cdd7e4!important}
+body.mfa-night .focusBelow{color:#dbe4ef!important}
+body.mfa-night .focusStatCard{background:#111b2a!important;border-color:#29364a!important;color:#dbe4ef!important}
+body.mfa-night .focusHistoryRow{background:#1a2638!important;border-color:#2c3b51!important}
+body.mfa-night .focusHistoryRow b,body.mfa-night .focusHistoryRow span{color:#cad5e2!important}
+body.mfa-night .mfaSourceCard a{color:#d3c3f2!important}
+body.mfa-night .courseFinish,body.mfa-night .emptyState{color:#dbe4ef!important}
+/* Inline backgrounds generated by older lesson/lab pages must not stay bright white. */
+body.mfa-night .app [style*="background:#fff"],body.mfa-night .app [style*="background: #fff"],body.mfa-night .app [style*="background:white"],body.mfa-night .app [style*="background: white"],body.mfa-night .app [style*="background-color:#fff"],body.mfa-night .app [style*="background-color: #fff"],body.mfa-night .app [style*="background-color:white"],body.mfa-night .app [style*="background-color: white"]{background:#172337!important;border-color:#34435a!important;color:#dbe4ef!important}
+body.mfa-night .app [style*="color:#5"],body.mfa-night .app [style*="color: #5"],body.mfa-night .app [style*="color:#6"],body.mfa-night .app [style*="color: #6"],body.mfa-night .app [style*="color:#7"],body.mfa-night .app [style*="color: #7"]{color:#c2cddd!important}
+body.mfa-night .app table{border-color:#344158!important;color:#dbe4ef!important}
+body.mfa-night .app th,body.mfa-night .app td{background:#121e2e!important;border-color:#344158!important;color:#dbe4ef!important}
+body.mfa-night .focusSoundBar{background:rgba(4,11,21,.82)!important;border-color:#ffffff1e!important}
+body.mfa-night .focusRainToggle small{color:#a4b2c3!important}
+@media(prefers-reduced-motion:reduce){.focusSoundBar *{transition:none!important}}
+</style>
+<script id="minik-akademi-v20-rain-ambience">
+(function(){
+ 'use strict';
+ let rainContext=null,rainMaster=null,rainSources=[],rainActive=false,rainVolume=.32;
+ try{const saved=Number(localStorage.getItem('mfa_rain_volume_v20'));if(Number.isFinite(saved))rainVolume=Math.min(1,Math.max(0,saved));}catch(_){}
+ function ui(){
+  const btn=document.getElementById('focusRainToggle'),state=document.getElementById('focusRainState'),slider=document.getElementById('focusRainVolume'),value=document.getElementById('focusRainVolumeValue');
+  if(btn){btn.setAttribute('aria-pressed',String(rainActive));btn.querySelector('b').textContent=rainActive?'Yağmur sesi açık':'Yağmur sesi';}
+  if(state)state.textContent=rainActive?'Açık · Hafif yağmur':'Kapalı · Sessiz çalışma';
+  if(slider&&document.activeElement!==slider)slider.value=String(Math.round(rainVolume*100));
+  if(value)value.textContent=Math.round(rainVolume*100)+'%';
+ }
+ function noiseBuffer(ctx,seconds,softPink){
+  const length=Math.floor(ctx.sampleRate*seconds),buffer=ctx.createBuffer(1,length,ctx.sampleRate),data=buffer.getChannelData(0);
+  let b0=0,b1=0,b2=0;
+  for(let i=0;i<length;i++){
+   const white=Math.random()*2-1;
+   if(softPink){b0=.99765*b0+white*.099046;b1=.963*b1+white*.296516;b2=.57*b2+white*1.052691;data[i]=(b0+b1+b2+white*.1848)*.11;}
+   else data[i]=white*.24;
+  }
+  return buffer;
+ }
+ async function startRain(){
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx){if(typeof window.setFocusStatus==='function')window.setFocusStatus('Bu tarayıcıda ses desteği bulunamadı.');return false;}
+  try{
+   if(!rainContext||rainContext.state==='closed'){
+    rainContext=new AudioCtx();rainMaster=rainContext.createGain();rainMaster.gain.value=0;rainMaster.connect(rainContext.destination);
+    const base=noiseBuffer(rainContext,4,true),drops=noiseBuffer(rainContext,3,false);
+    const low=rainContext.createBufferSource();low.buffer=base;low.loop=true;
+    const lowPass=rainContext.createBiquadFilter();lowPass.type='lowpass';lowPass.frequency.value=1250;lowPass.Q.value=.35;
+    const highPass=rainContext.createBiquadFilter();highPass.type='highpass';highPass.frequency.value=130;highPass.Q.value=.45;
+    const lowGain=rainContext.createGain();lowGain.gain.value=.88;
+    low.connect(highPass);highPass.connect(lowPass);lowPass.connect(lowGain);lowGain.connect(rainMaster);low.start();
+    const top=rainContext.createBufferSource();top.buffer=drops;top.loop=true;
+    const band=rainContext.createBiquadFilter();band.type='bandpass';band.frequency.value=2600;band.Q.value=.62;
+    const topGain=rainContext.createGain();topGain.gain.value=.16;
+    top.connect(band);band.connect(topGain);topGain.connect(rainMaster);top.start();
+    rainSources=[low,top];
+   }
+   if(rainContext.state==='suspended')await rainContext.resume();
+   const target=.23*rainVolume;
+   rainMaster.gain.cancelScheduledValues(rainContext.currentTime);
+   rainMaster.gain.setTargetAtTime(target,rainContext.currentTime,.55);
+   rainActive=true;ui();return true;
+  }catch(err){rainActive=false;ui();console.warn('Rain ambience could not start',err);return false;}
+ }
+ function stopRain(){
+  rainActive=false;ui();
+  if(rainContext&&rainMaster&&rainContext.state!=='closed'){
+   try{rainMaster.gain.cancelScheduledValues(rainContext.currentTime);rainMaster.gain.setTargetAtTime(0,rainContext.currentTime,.28);}catch(_){}
+   const ctx=rainContext,srcs=rainSources.slice();rainSources=[];
+   window.setTimeout(()=>{srcs.forEach(n=>{try{n.stop();}catch(_){}});if(rainContext===ctx){ctx.close().catch(()=>{});rainContext=null;rainMaster=null;}},1100);
+  }
+ }
+ window.mfaRainToggle=async function(){if(rainActive){stopRain();return;}await startRain();};
+ window.mfaRainVolume=function(value){rainVolume=Math.min(1,Math.max(0,(Number(value)||0)/100));try{localStorage.setItem('mfa_rain_volume_v20',String(rainVolume));}catch(_){}if(rainActive&&rainMaster&&rainContext){rainMaster.gain.setTargetAtTime(.23*rainVolume,rainContext.currentTime,.15);}ui();};
+ window.mfaRainStop=stopRain;
+ const oldGo=window.goPage;
+ if(typeof oldGo==='function'){
+  window.goPage=function(page){if(page!=='focus'&&rainActive)stopRain();return oldGo.apply(this,arguments);};
+ }
+ window.addEventListener('pagehide',stopRain,{once:true});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&rainActive){/* Keep a user-requested ambience alive across brief tab switches. */}});
+ ui();
+ window.MINIK_AKADEMI_V20={version:'20.0',optionalRainAmbience:true,volumeControl:true,globalNightPalette:true,automaticNightHours:'19:00-07:00'};
+window.MINIK_AKADEMI_V21={version:'21.0',interactiveCoffeeStation:true,dragCupToBrew:true,timeBasedCoffeeSip:true,completeNightSurfaceScan:true,getCoffeeLevel:()=>coffeeState.level,getCoffeePosition:()=>coffeeState.position};
+})();
+</script>
+
+<style id="minik-akademi-v21-coffee-and-final-night-surfaces">
+/* A miniature espresso nook: drag the clear glass from the shelf to the machine tray. */
+.focusCoffeeStation{position:absolute;z-index:7;left:clamp(10px,2.2vw,30px);bottom:3.1%;width:244px;height:266px;pointer-events:none;filter:drop-shadow(0 12px 16px rgba(0,0,0,.4))}
+.focusCoffeeShelf{position:absolute;left:12px;top:72px;width:128px;height:11px;border-radius:3px;background:linear-gradient(180deg,#d0ac7d,#76543d 45%,#3c2b28 100%);box-shadow:0 7px 10px #060b14a8,0 1px 0 #fff2ce55 inset}
+.focusCoffeeShelf:before{content:"";position:absolute;left:8px;right:7px;top:-4px;height:4px;border-radius:4px;background:linear-gradient(90deg,#9c7756,#ead1a0,#78583f)}
+.coffeeShelfPlant{position:absolute;left:8px;bottom:9px;color:#8ca78b;font-size:21px;text-shadow:0 0 10px #abc5a455}
+.coffeeShelfText{position:absolute;right:8px;top:-17px;font:700 6px/1 system-ui,sans-serif;letter-spacing:.18em;color:#e8d3b5a8}
+.focusGlassCup{position:absolute;z-index:5;left:54px;top:3px;width:66px;height:79px;padding:0;border:0;background:transparent;cursor:grab;touch-action:none;pointer-events:auto;filter:drop-shadow(0 8px 7px #05091188);transition:filter .18s}
+.focusGlassCup svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 5px #eaf5fb26)}
+.focusGlassCup:hover{filter:drop-shadow(0 9px 11px #050911aa) brightness(1.1)}
+.focusGlassCup.is-dragging{cursor:grabbing;z-index:12;filter:drop-shadow(0 13px 13px #0009) brightness(1.13);transition:none}
+.focusGlassCup.is-filled svg{filter:drop-shadow(0 0 7px #d9a36d55)}
+.focusCupSteam{position:absolute;left:22px;top:-4px;color:#f2e6d5;font:18px/1 Georgia,serif;opacity:0;pointer-events:none;animation:coffeeSteam .95s ease-in-out infinite}
+@keyframes coffeeSteam{0%{opacity:0;transform:translateY(6px) scale(.8)}45%{opacity:.6}100%{opacity:0;transform:translateY(-9px) scale(1.2)}}
+.focusCupTag{position:absolute;left:50%;bottom:-3px;transform:translate(-50%,100%);white-space:nowrap;padding:4px 6px;border:1px solid #e3d0b333;border-radius:20px;background:#0c1523c9;color:#e6d6bc;font:800 6px/1 system-ui,sans-serif;letter-spacing:.12em;text-shadow:0 1px 3px #000;pointer-events:none}
+.focusCoffeeMachine{position:absolute;left:22px;top:76px;width:147px;height:145px;pointer-events:none}
+.coffeeMachineTop{position:absolute;left:9px;right:9px;top:0;height:25px;border-radius:12px 12px 5px 5px;background:linear-gradient(110deg,#33404a,#111c27 35%,#4c5660 57%,#19242d 100%);border:1px solid #c9d6dd38;box-shadow:inset 0 2px 4px #ffffff24,0 4px 7px #04091288}
+.coffeeMachineTop:before{content:"";position:absolute;left:8px;right:8px;top:4px;height:2px;border-radius:3px;background:linear-gradient(90deg,#d1b18166,#f3dfba,#aa845e55)}
+.coffeeMachineTop>b{position:absolute;left:19px;top:10px;color:#d4c0a0;font:800 6px/1 system-ui,sans-serif;letter-spacing:.21em}
+.coffeeMachineTop>i{position:absolute;left:9px;top:10px;width:5px;height:5px;border-radius:50%;background:#9ab39c;box-shadow:0 0 7px #93b69b77}
+.coffeeMachineLamp{position:absolute;right:9px;top:9px;width:6px;height:6px;border-radius:50%;background:#d6a96b;box-shadow:0 0 8px #d7a96b99}
+.coffeeMachineFace{position:absolute;left:5px;right:5px;top:20px;height:85px;border-radius:7px 7px 11px 11px;background:linear-gradient(90deg,#1a2630,#36424a 18%,#202c36 50%,#131e28 88%,#45515a);border:1px solid #b9c8d333;box-shadow:inset 0 2px 5px #ffffff12,inset 0 -7px 12px #03081066}
+.coffeeMachineFace:before{content:"";position:absolute;left:19px;right:19px;top:9px;height:15px;border-radius:3px;background:linear-gradient(180deg,#0a121c,#293642);border:1px solid #bdc9d02d;box-shadow:inset 0 1px 4px #0008}
+.coffeeMachineDial{position:absolute;left:13px;top:35px;width:21px;height:21px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#a6b0b4,#38444d 42%,#141e27 70%);border:2px solid #8e9ba35c;box-shadow:0 2px 4px #0008}
+.coffeeMachineDial i{position:absolute;width:2px;height:7px;left:8px;top:3px;background:#e8d1a8;border-radius:3px;transform:rotate(38deg);transform-origin:bottom}
+.coffeeMachineButtons{position:absolute;right:13px;top:39px;display:flex;gap:5px}.coffeeMachineButtons i{width:5px;height:5px;border-radius:50%;background:#d7c2a1;box-shadow:0 0 5px #e4cfad77}
+.coffeeMachineButtons i:nth-child(2){background:#8ca9a0}.coffeeMachineButtons i:nth-child(3){background:#c28c68}
+.coffeeMachineBadge{position:absolute;right:13px;bottom:8px;color:#d6c3a3;font-size:12px;opacity:.8}
+.coffeeMachineHead{position:absolute;left:49px;top:32px;width:48px;height:24px;border-radius:4px;background:linear-gradient(90deg,#101a24,#59646b 40%,#192530);border:1px solid #abb9c22e;box-shadow:0 3px 4px #0007}
+.coffeeSpout{position:absolute;left:18px;bottom:-11px;width:11px;height:13px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,#202c35,#a2aeb2 47%,#28343c);border:1px solid #d4dee02a}
+.coffeeSpout:after{content:"";position:absolute;left:3px;bottom:-2px;width:3px;height:3px;border-radius:50%;background:#b77a43}
+.coffeeDrip{position:absolute;left:22px;bottom:-16px;width:3px;height:0;border-radius:0 0 4px 4px;background:linear-gradient(#bd7b43,#e0ab6b);opacity:0}
+.focusCoffeeStation.is-brewing .coffeeDrip{height:19px;opacity:1;animation:coffeeDrip  .28s ease-in-out infinite alternate}
+@keyframes coffeeDrip{to{transform:scaleY(.7);opacity:.68}}
+.coffeeMachineTray{position:absolute;left:43px;top:111px;width:76px;height:29px;border-radius:4px 4px 9px 9px;background:linear-gradient(180deg,#87939a,#303d46 50%,#151f29);border:1px solid #c3cdd23d;box-shadow:0 4px 6px #0008,inset 0 2px #ffffff24}
+.coffeeMachineTray:before{content:"";position:absolute;left:-9px;right:-9px;top:-4px;height:5px;border-radius:3px;background:linear-gradient(90deg,#4a5660,#d3d5d0,#45515a)}
+.coffeeTrayGrill{position:absolute;left:9px;right:9px;top:7px;height:12px;border-radius:2px;background:repeating-linear-gradient(90deg,#17232c 0 2px,#9ca9ac 2px 3px);opacity:.8}
+.coffeeTrayHint{position:absolute;inset:auto 0 1px;text-align:center;color:#e8d8bc;font:800 4px/1 system-ui,sans-serif;letter-spacing:.07em;opacity:.7}
+.coffeeMachineTray.drop-ready{outline:2px solid #e5c796;outline-offset:4px;box-shadow:0 0 18px #e5c79677}
+.coffeeMachineBase{position:absolute;left:0;right:0;bottom:4px;height:15px;border-radius:5px 5px 9px 9px;background:linear-gradient(180deg,#59656d,#141f28 60%,#0b121b);border:1px solid #aebdc42b;box-shadow:0 5px 8px #0008}
+.coffeeMachineFoot{position:absolute;bottom:0;width:17px;height:6px;border-radius:0 0 4px 4px;background:#0b141d}.coffeeMachineFoot.left{left:12px}.coffeeMachineFoot.right{right:12px}
+.focusCoffeeStatus{position:absolute;left:3px;bottom:23px;max-width:190px;white-space:nowrap;padding:4px 7px;border:1px solid #f5e2c325;border-radius:30px;background:#0a1320c9;color:#dfd1b8;font:700 7px/1.1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 4px #000;pointer-events:none}
+.focusCoffeeAction{position:absolute;left:4px;bottom:0px;padding:5px 8px;border:1px solid #e4c99b55;border-radius:9px;background:#152131e8;color:#e9d8b9;font:800 8px/1 system-ui,sans-serif;pointer-events:auto;cursor:pointer}
+.focusCoffeeAction:disabled{opacity:.6;cursor:wait}
+@media(max-width:900px) and (min-width:651px){.focusOverlay{grid-template-columns:minmax(0,178px) minmax(0,1fr)!important;gap:12px!important;padding:18px!important}.focusCopy{display:none!important}.focusPanel{grid-column:2;justify-self:stretch!important;max-width:none!important;width:100%}.focusCoffeeStation{transform:scale(.70);transform-origin:bottom left;left:4px;bottom:2.6%}}
+@media(max-width:650px){.focusOverlay{padding-bottom:160px!important}.focusCoffeeStation{left:7px;bottom:4px;transform:scale(.57);transform-origin:bottom left;width:244px;height:266px}.focusCoffeeStatus{font-size:8px}.focusCoffeeAction{font-size:9px}}
+@media(min-width:901px){.focusCopy{padding-bottom:235px!important}.focusDeskItems{display:none!important}}
+@media(prefers-reduced-motion:reduce){.focusCupSteam,.focusCoffeeStation.is-brewing .coffeeDrip{animation:none!important}}
+
+/* Night theme completion: detect and restyle leftover light cards and inline panels. */
+body.mfa-night .app .mfaNightSurface,body.mfa-night #extraPage .mfaNightSurface,body.mfa-night .sideNav .mfaNightSurface{background-color:#142033!important;background-image:none!important;border-color:#31415a!important;color:#dce5f0!important;box-shadow:0 10px 28px #0003!important}
+body.mfa-night .app .mfaNightSurface :is(h1,h2,h3,h4,h5,b,strong,label,span,p,small,li,td,th){color:inherit}
+body.mfa-night .app .mfaNightSurface :is(input,select,textarea){background:#0e1929!important;color:#e4ebf5!important;border-color:#3b4b62!important}
+body.mfa-night .app .mfaNightSurface :is(button){color:#e0e8f2!important;border-color:#3a4a61!important}
+body.mfa-night .app .mfaNightSurface :is(button.primary,.btn:not(.secondary)){background:linear-gradient(135deg,#7f6b9e,#55466f)!important;color:#fff!important}
+body.mfa-night .app .mfaNightSurface a{color:#cdbef0!important}
+</style>
+<script id="minik-akademi-v21-night-surface-scanner">
+(function(){
+ 'use strict';
+ const roots=['.app','#extraPage','.sideNav'];
+ function isPale(color){const m=String(color||'').match(/rgba?\(([^)]+)\)/);if(!m)return false;const v=m[1].split(',').slice(0,3).map(x=>Number(x.trim()));return v.length===3&&v.every(Number.isFinite)&&Math.min(...v)>218&&Math.max(...v)-Math.min(...v)<46;}
+ function scan(){
+  const night=document.body.classList.contains('mfa-night');
+  roots.forEach(sel=>document.querySelectorAll(sel).forEach(root=>root.querySelectorAll('*').forEach(el=>{
+   if(el.closest('.focusStage,.focusCoffeeStation,.focusSky,svg,canvas,video,img'))return;
+   if(!night){el.classList.remove('mfaNightSurface');return;}
+   const cs=getComputedStyle(el);const hasBorder=cs.borderTopWidth!=='0px'||cs.borderLeftWidth!=='0px';
+   if(isPale(cs.backgroundColor)&&el.getBoundingClientRect().width>0&&el.getBoundingClientRect().height>0&&(hasBorder||el.children.length>0||el.matches('button,input,select,textarea'))){el.classList.add('mfaNightSurface');}
+  })));
+ }
+ let queued=false;function queue(){if(queued)return;queued=true;setTimeout(()=>{queued=false;scan();},260);}
+ scan();
+ const observer=new MutationObserver(queue);observer.observe(document.body,{subtree:true,childList:true});
+ const themeObserver=new MutationObserver(scan);themeObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+ setInterval(()=>{if(document.body.classList.contains('mfa-night'))scan();},4500);
+ window.MINIK_AKADEMI_V21_NIGHT_SCAN=scan;
 })();
 </script>
 
