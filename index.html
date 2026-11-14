@@ -543,6 +543,49 @@ body.mfa-night .progress{background:#253348!important}
 
 
 
+<style id="mfa-motion-graph-night-contrast">
+/* High-contrast car motion graphs in dark theme only. */
+body.mfa-night .app .motionGraphCard{
+  background:#111b2a!important;
+  border-color:#34445e!important;
+  color:#e3ecf7!important;
+}
+body.mfa-night .app .motionGraphCard>b{color:#eadfff!important}
+body.mfa-night .app .motionGraphCard>small{color:#b2c2d7!important}
+body.mfa-night .app .motionGraphCard svg{
+  background:linear-gradient(180deg,#0d1726 0%,#121f32 100%);
+  border:1px solid #2e415b;
+  border-radius:10px;
+  overflow:visible;
+}
+body.mfa-night .app .motionGraphCard svg path[stroke="#d8cde5"]{
+  stroke:#a5b6cc!important;
+}
+body.mfa-night .app .motionGraphCard svg path[stroke="#eee8f2"]{
+  stroke:#354b66!important;
+}
+body.mfa-night .app .motionGraphCard svg text{
+  fill:#d0daea!important;
+  font-weight:800;
+}
+body.mfa-night .app .motionGraphCard svg #motion-x-curve{
+  stroke:#c4a4ff!important;
+  filter:drop-shadow(0 0 2px rgba(196,164,255,.55));
+}
+body.mfa-night .app .motionGraphCard svg #motion-v-curve{
+  stroke:#65dda7!important;
+  filter:drop-shadow(0 0 2px rgba(101,221,167,.55));
+}
+body.mfa-night .app .motionGraphCard svg line[id$="-cursor"]{
+  stroke:#ffb8d4!important;
+  stroke-width:2.5;
+}
+body.mfa-night .app .motionGraphCard svg circle[id$="-dot"]{
+  fill:#ffd27a!important;
+  stroke:#101a29;
+  stroke-width:1.5;
+}
+</style>
 </head><body>
 <aside class="sideNav" id="sideNav" aria-label="Ana gezinme">
   <div class="navBrand"><div class="navLogo">🌷</div><div><b>Minik Akademi</b><small>öğrenmenin tatlı hâli</small></div></div>
