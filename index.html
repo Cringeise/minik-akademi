@@ -2897,73 +2897,157 @@ body.mfa-night .focusSoundBar{background:rgba(4,11,21,.82)!important;border-colo
 body.mfa-night .focusRainToggle small{color:#a4b2c3!important}
 @media(prefers-reduced-motion:reduce){.focusSoundBar *{transition:none!important}}
 </style>
-<script id="minik-akademi-v20-rain-ambience">
+<script id="minik-akademi-v25-rain-ambience-fixed">
 (function(){
  'use strict';
- let rainContext=null,rainMaster=null,rainSources=[],rainActive=false,rainVolume=.32;
- try{const saved=Number(localStorage.getItem('mfa_rain_volume_v20'));if(Number.isFinite(saved))rainVolume=Math.min(1,Math.max(0,saved));}catch(_){}
- function ui(){
-  const btn=document.getElementById('focusRainToggle'),state=document.getElementById('focusRainState'),slider=document.getElementById('focusRainVolume'),value=document.getElementById('focusRainVolumeValue');
-  if(btn){btn.setAttribute('aria-pressed',String(rainActive));btn.querySelector('b').textContent=rainActive?'Yağmur sesi açık':'Yağmur sesi';}
-  if(state)state.textContent=rainActive?'Açık · Hafif yağmur':'Kapalı · Sessiz çalışma';
+ let rainContext=null,rainMaster=null,rainSources=[],rainActive=false,rainVolume=.55,rainGeneration=0;
+ try{
+  const saved=localStorage.getItem('mfa_rain_volume_v20');
+  if(saved!==null&&Number.isFinite(Number(saved)))rainVolume=Math.min(1,Math.max(0,Number(saved)));
+ }catch(_){}
+ function rainState(message){
+  const state=document.getElementById('focusRainState');
+  if(state)state.textContent=message||(rainActive?'Açık · Hafif yağmur':'Kapalı · Sessiz çalışma');
+  const status=document.getElementById('focusStatus');
+  if(status&&message)status.textContent=message;
+ }
+ function ui(message){
+  const btn=document.getElementById('focusRainToggle');
+  const state=document.getElementById('focusRainState');
+  const slider=document.getElementById('focusRainVolume');
+  const value=document.getElementById('focusRainVolumeValue');
+  if(btn){
+   btn.setAttribute('aria-pressed',String(rainActive));
+   const label=btn.querySelector('b');
+   if(label)label.textContent=rainActive?'Yağmur sesi açık':'Yağmur sesi';
+  }
+  if(state)state.textContent=message||(rainActive?'Açık · Yağmur yağıyor':'Kapalı · Sessiz çalışma');
   if(slider&&document.activeElement!==slider)slider.value=String(Math.round(rainVolume*100));
   if(value)value.textContent=Math.round(rainVolume*100)+'%';
  }
- function noiseBuffer(ctx,seconds,softPink){
-  const length=Math.floor(ctx.sampleRate*seconds),buffer=ctx.createBuffer(1,length,ctx.sampleRate),data=buffer.getChannelData(0);
-  let b0=0,b1=0,b2=0;
+ function noiseBuffer(ctx,seconds,kind){
+  const length=Math.max(1,Math.floor(ctx.sampleRate*seconds));
+  const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+  const data=buffer.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0;
   for(let i=0;i<length;i++){
    const white=Math.random()*2-1;
-   if(softPink){b0=.99765*b0+white*.099046;b1=.963*b1+white*.296516;b2=.57*b2+white*1.052691;data[i]=(b0+b1+b2+white*.1848)*.11;}
-   else data[i]=white*.24;
+   if(kind==='pink'){
+    b0=.99886*b0+white*.0555179;
+    b1=.99332*b1+white*.0750759;
+    b2=.969*b2+white*.153852;
+    b3=.8665*b3+white*.3104856;
+    data[i]=(b0+b1+b2+b3+white*.5362)*.22;
+   }else{
+    const soft=white*.34;
+    data[i]=soft;
+   }
   }
   return buffer;
  }
+ function makeRain(ctx){
+  const master=ctx.createGain();
+  master.gain.value=0;
+  master.connect(ctx.destination);
+  const sources=[];
+  const bed=ctx.createBufferSource();
+  bed.buffer=noiseBuffer(ctx,5,'pink');bed.loop=true;
+  const hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=105;hp.Q.value=.45;
+  const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1750;lp.Q.value=.35;
+  const bedGain=ctx.createGain();bedGain.gain.value=.95;
+  bed.connect(hp);hp.connect(lp);lp.connect(bedGain);bedGain.connect(master);bed.start();sources.push(bed);
+
+  const patter=ctx.createBufferSource();
+  patter.buffer=noiseBuffer(ctx,4,'white');patter.loop=true;
+  const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=2450;bp.Q.value=.72;
+  const patterGain=ctx.createGain();patterGain.gain.value=.13;
+  patter.connect(bp);bp.connect(patterGain);patterGain.connect(master);patter.start();sources.push(patter);
+
+  const distant=ctx.createBufferSource();
+  distant.buffer=noiseBuffer(ctx,6,'pink');distant.loop=true;
+  const distantLp=ctx.createBiquadFilter();distantLp.type='lowpass';distantLp.frequency.value=520;distantLp.Q.value=.5;
+  const distantGain=ctx.createGain();distantGain.gain.value=.26;
+  distant.connect(distantLp);distantLp.connect(distantGain);distantGain.connect(master);distant.start();sources.push(distant);
+  return {master,sources};
+ }
  async function startRain(){
   const AudioCtx=window.AudioContext||window.webkitAudioContext;
-  if(!AudioCtx){if(typeof window.setFocusStatus==='function')window.setFocusStatus('Bu tarayıcıda ses desteği bulunamadı.');return false;}
+  if(!AudioCtx){
+   ui('Ses desteği bu tarayıcıda kullanılamıyor.');
+   rainState('Tarayıcı ses desteği bulunamadı.');
+   return false;
+  }
+  const ticket=++rainGeneration;
   try{
    if(!rainContext||rainContext.state==='closed'){
-    rainContext=new AudioCtx();rainMaster=rainContext.createGain();rainMaster.gain.value=0;rainMaster.connect(rainContext.destination);
-    const base=noiseBuffer(rainContext,4,true),drops=noiseBuffer(rainContext,3,false);
-    const low=rainContext.createBufferSource();low.buffer=base;low.loop=true;
-    const lowPass=rainContext.createBiquadFilter();lowPass.type='lowpass';lowPass.frequency.value=1250;lowPass.Q.value=.35;
-    const highPass=rainContext.createBiquadFilter();highPass.type='highpass';highPass.frequency.value=130;highPass.Q.value=.45;
-    const lowGain=rainContext.createGain();lowGain.gain.value=.88;
-    low.connect(highPass);highPass.connect(lowPass);lowPass.connect(lowGain);lowGain.connect(rainMaster);low.start();
-    const top=rainContext.createBufferSource();top.buffer=drops;top.loop=true;
-    const band=rainContext.createBiquadFilter();band.type='bandpass';band.frequency.value=2600;band.Q.value=.62;
-    const topGain=rainContext.createGain();topGain.gain.value=.16;
-    top.connect(band);band.connect(topGain);topGain.connect(rainMaster);top.start();
-    rainSources=[low,top];
+    rainContext=new AudioCtx({latencyHint:'interactive'});
+    const made=makeRain(rainContext);
+    rainMaster=made.master;rainSources=made.sources;
    }
-   if(rainContext.state==='suspended')await rainContext.resume();
-   const target=.23*rainVolume;
-   rainMaster.gain.cancelScheduledValues(rainContext.currentTime);
-   rainMaster.gain.setTargetAtTime(target,rainContext.currentTime,.55);
-   rainActive=true;ui();return true;
-  }catch(err){rainActive=false;ui();console.warn('Rain ambience could not start',err);return false;}
- }
- function stopRain(){
-  rainActive=false;ui();
-  if(rainContext&&rainMaster&&rainContext.state!=='closed'){
-   try{rainMaster.gain.cancelScheduledValues(rainContext.currentTime);rainMaster.gain.setTargetAtTime(0,rainContext.currentTime,.28);}catch(_){}
-   const ctx=rainContext,srcs=rainSources.slice();rainSources=[];
-   window.setTimeout(()=>{srcs.forEach(n=>{try{n.stop();}catch(_){}});if(rainContext===ctx){ctx.close().catch(()=>{});rainContext=null;rainMaster=null;}},1100);
+   if(rainContext.state!=='running')await rainContext.resume();
+   if(ticket!==rainGeneration)return false;
+   if(rainContext.state!=='running')throw new Error('Ses motoru başlatılamadı.');
+   const now=rainContext.currentTime;
+   rainMaster.gain.cancelScheduledValues(now);
+   rainMaster.gain.setValueAtTime(rainMaster.gain.value,now);
+   rainMaster.gain.linearRampToValueAtTime(.58*rainVolume,now+0.9);
+   rainActive=true;ui('Açık · Yağmur yağıyor');
+   return true;
+  }catch(err){
+   rainActive=false;ui('Ses açılamadı · Düğmeye yeniden dokun');
+   console.warn('Rain ambience could not start:',err);
+   try{if(rainContext&&rainContext.state==='suspended')await rainContext.resume();}catch(_){}
+   return false;
   }
  }
- window.mfaRainToggle=async function(){if(rainActive){stopRain();return;}await startRain();};
- window.mfaRainVolume=function(value){rainVolume=Math.min(1,Math.max(0,(Number(value)||0)/100));try{localStorage.setItem('mfa_rain_volume_v20',String(rainVolume));}catch(_){}if(rainActive&&rainMaster&&rainContext){rainMaster.gain.setTargetAtTime(.23*rainVolume,rainContext.currentTime,.15);}ui();};
- window.mfaRainStop=stopRain;
- const oldGo=window.goPage;
- if(typeof oldGo==='function'){
-  window.goPage=function(page){if(page!=='focus'&&rainActive)stopRain();return oldGo.apply(this,arguments);};
+ function stopRain(){
+  rainActive=false;ui('Kapalı · Sessiz çalışma');
+  const ticket=++rainGeneration;
+  if(!rainContext||!rainMaster||rainContext.state==='closed')return;
+  const ctx=rainContext,master=rainMaster,sources=rainSources.slice();
+  try{
+   const now=ctx.currentTime;
+   master.gain.cancelScheduledValues(now);
+   master.gain.setValueAtTime(master.gain.value,now);
+   master.gain.linearRampToValueAtTime(0,now+.45);
+  }catch(_){}
+  window.setTimeout(()=>{
+   if(ticket!==rainGeneration||rainContext!==ctx)return;
+   sources.forEach(source=>{try{source.stop();}catch(_){}});
+   ctx.close().catch(()=>{});
+   rainContext=null;rainMaster=null;rainSources=[];
+  },600);
  }
- window.addEventListener('pagehide',stopRain,{once:true});
- document.addEventListener('visibilitychange',()=>{if(document.hidden&&rainActive){/* Keep a user-requested ambience alive across brief tab switches. */}});
+ window.mfaRainToggle=async function(){
+  if(rainActive){stopRain();return false;}
+  return await startRain();
+ };
+ window.mfaRainVolume=function(value){
+  rainVolume=Math.min(1,Math.max(0,(Number(value)||0)/100));
+  try{localStorage.setItem('mfa_rain_volume_v20',String(rainVolume));}catch(_){}
+  if(rainActive&&rainMaster&&rainContext&&rainContext.state==='running'){
+   const now=rainContext.currentTime;
+   rainMaster.gain.cancelScheduledValues(now);
+   rainMaster.gain.setTargetAtTime(.58*rainVolume,now,.12);
+  }
+  ui();
+ };
+ window.mfaRainStop=stopRain;
+ const previousGo=window.goPage;
+ if(typeof previousGo==='function'){
+  window.goPage=function(page){
+   if(page!=='focus'&&rainActive)stopRain();
+   return previousGo.apply(this,arguments);
+  };
+ }
+ window.addEventListener('pagehide',stopRain);
+ document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&rainActive&&rainContext&&rainContext.state==='suspended'){
+   rainContext.resume().catch(()=>{});
+  }
+ });
  ui();
- window.MINIK_AKADEMI_V20={version:'20.0',optionalRainAmbience:true,volumeControl:true,globalNightPalette:true,automaticNightHours:'19:00-07:00'};
-window.MINIK_AKADEMI_V21={version:'21.0',interactiveCoffeeStation:true,dragCupToBrew:true,timeBasedCoffeeSip:true,completeNightSurfaceScan:true,getCoffeeLevel:()=>coffeeState.level,getCoffeePosition:()=>coffeeState.position};
+ window.MINIK_AKADEMI_V25_RAIN={version:'25.0',optionalAmbience:true,volumeControl:true,webAudio:true};
 })();
 </script>
 
