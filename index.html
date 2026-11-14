@@ -270,7 +270,8 @@ body{margin:0;min-width:320px;overflow-x:hidden}
   .focusStage{min-height:0!important;border-radius:22px}
   .focusOverlay{display:flex!important;flex-direction:column!important;min-height:0!important;padding:16px 12px 18px!important;gap:8px!important;align-content:start}
   .focusPanel{order:-1!important}
-  .focusCopy{display:none!important;max-width:none;align-self:start;padding:2px 5px 0}
+  .focusCopy{order:2!important;max-width:none;align-self:start;padding:2px 5px 0}
+  .focusCopy{display:none!important}
   .focusCopy h3{font-size:27px!important;margin:7px 0 0!important}
   .focusCopy p,.focusQuote,.focusStatus{display:none!important}
   .focusDeskItems{margin-top:4px!important;gap:12px}
@@ -294,6 +295,108 @@ body{margin:0;min-width:320px;overflow-x:hidden}
   .focusStatCard{padding:14px}
 }
 
+</style>
+<style id="minik-akademi-v18-night-and-focus-design">
+/* A richer hand-drawn rainy study-room scene */
+.focusStage{min-height:740px;border:1px solid #8090a544;background:#0b1727;box-shadow:0 28px 90px #11182c35,0 0 0 8px #ffffff70;}
+.focusSky{background:linear-gradient(180deg,#111d32 0%,#243b55 45%,#172b42 78%,#101b2a 100%)}
+.focusAtmosphere{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 76%,#e5aa6840 0,transparent 25%),radial-gradient(ellipse at 78% 34%,#94a8b62c 0,transparent 36%),linear-gradient(90deg,#0a142550,transparent 48%,#0a142530);pointer-events:none}
+.focusWindowGrid{position:absolute;z-index:1;inset:3% 3% 17%;pointer-events:none;opacity:.27;background:linear-gradient(90deg,transparent 32.95%,#d5e0e74a 33.12%,#d5e0e74a 33.3%,transparent 33.47%,transparent 66.3%,#d5e0e74a 66.47%,#d5e0e74a 66.65%,transparent 66.82%),linear-gradient(180deg,transparent 57%,#d5e0e74a 57.2%,#d5e0e74a 57.4%,transparent 57.6%);filter:drop-shadow(0 0 5px #b8cad622)}
+.focusMoon{width:82px;height:82px;background:radial-gradient(circle at 35% 30%,#fff5d9,#e8d7ab 75%);box-shadow:0 0 35px #f1e2bd70,0 0 110px #d8ddf344}
+.focusMoon:after{background:#263b54;left:24px;top:-10px;width:76px;height:76px;opacity:.42}
+.focusCloud{background:#8294a65c;filter:blur(10px)}
+.focusHills{background:#1d344d;opacity:.94}
+.focusHills.back{background:#486178;opacity:.58}
+.focusHouse{box-shadow:inset 0 0 0 1px #9eafbb24,0 -9px 24px #080f1e22}
+.focusHouse:before{width:13px;height:15px;box-shadow:25px 22px #e9c98a69,0 42px #b6d9e06a,25px 53px #d8ae6a66;animation:windowGlow 3.8s ease-in-out var(--window-delay,0s) infinite alternate}
+.focusRain{opacity:.62;background-image:repeating-linear-gradient(106deg,transparent 0 16px,#d9e7f06c 17px,#d9e7f06c 18px,transparent 19px 37px)}
+.focusRain.rainFar{opacity:.26}
+.focusRainReflection{position:absolute;z-index:1;inset:10% 0 18%;pointer-events:none;background:linear-gradient(110deg,transparent 12%,#d9e5ef0a 22%,transparent 31%,transparent 62%,#f5dbad0d 72%,transparent 83%);mix-blend-mode:screen;animation:windowReflection 8s ease-in-out infinite alternate}
+@keyframes windowReflection{to{opacity:.38;transform:translateX(12px)}}
+.focusDeskFront{position:absolute;z-index:2;left:0;right:0;bottom:0;height:17%;background:linear-gradient(180deg,#392f35 0%,#211d27 13%,#151824 100%);box-shadow:0 -13px 35px #08101d55,inset 0 2px #c9aa7655}
+.focusDeskFront:before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,#725b4f,#c59b68 30%,#8c715f 55%,#d0aa79 75%,#4d4148);opacity:.8}
+.focusDeskFront:after{content:"";position:absolute;left:12%;right:12%;top:13px;height:60%;background:linear-gradient(180deg,#b8895710,transparent);filter:blur(14px)}
+.focusDeskLamp{position:absolute;left:7%;bottom:65%;width:90px;height:120px;filter:drop-shadow(0 7px 12px #05091288)}
+.focusDeskLamp:before{content:"";position:absolute;left:12px;top:0;width:66px;height:38px;background:linear-gradient(180deg,#f5dfb0,#bf9562);clip-path:polygon(22% 0,78% 0,100% 100%,0 100%);border-radius:8px;box-shadow:0 0 32px #f4d18d66}
+.focusDeskLamp:after{content:"";position:absolute;left:42px;top:35px;width:8px;height:64px;background:linear-gradient(90deg,#755b48,#e4c18a,#604b3e);border-radius:8px;transform:rotate(7deg);transform-origin:top}
+.focusDeskLamp i{position:absolute;left:-72px;top:-48px;width:205px;height:175px;background:radial-gradient(ellipse,#eac27d30 0,transparent 69%);pointer-events:none}
+.focusDeskPlant{position:absolute;right:8%;bottom:53%;font-size:52px;filter:drop-shadow(0 7px 9px #05091288);transform:rotate(-8deg)}
+.focusDeskBooks{position:absolute;right:25%;bottom:10%;width:112px;height:37px;display:flex;align-items:flex-end;gap:3px;transform:rotate(-2deg)}
+.focusDeskBooks i{display:block;height:28px;flex:1;border-radius:3px 3px 1px 1px;background:linear-gradient(90deg,#6d5960,#aa8168);box-shadow:inset 0 3px #d4b28b66}
+.focusDeskBooks i:nth-child(2){height:34px;background:linear-gradient(90deg,#405e6c,#77918d)}.focusDeskBooks i:nth-child(3){height:24px;background:linear-gradient(90deg,#8b684a,#c69b67)}
+.focusDeskCup{position:absolute;left:23%;bottom:16%;font-size:30px;filter:drop-shadow(0 5px 7px #05091299)}
+.focusDeskCup span{position:absolute;left:8px;top:-19px;color:#dfd9d1;font-size:16px;animation:steamRise 2.4s ease-in-out infinite}
+.focusDeskCat{position:absolute;left:42%;bottom:12%;font-size:25px;filter:drop-shadow(0 4px 6px #05091299)}
+.focusSill{bottom:16%;height:15px;background:linear-gradient(180deg,#687b89,#283b4d 60%,#1a2533);box-shadow:0 -8px 26px #0b1525aa}
+.focusWindowFrame{border:12px solid #101a2bbd;box-shadow:inset 0 0 0 2px #e2eaf024,inset 0 0 55px #070e1c99,0 0 0 1px #aab9c72b}
+.focusOverlay{min-height:740px;grid-template-columns:minmax(190px,.83fr) minmax(400px,1.17fr);gap:clamp(18px,3vw,44px);padding:clamp(24px,3.6vw,52px)}
+.focusCopy{padding:22px 12px 22px 18px;text-shadow:0 2px 15px #07101b88}
+.focusCopy h3{font-size:clamp(33px,4.2vw,52px);text-shadow:0 4px 22px #030b18aa}
+.focusCopy p{max-width:360px;color:#d7e2efcf}
+.focusDeskItems{margin-top:30px}
+.focusPanel{max-width:590px;padding:24px 29px 21px;border-radius:28px;background:linear-gradient(145deg,#101b2de8,#0b1424e8);border:1px solid #d9d9d02c;box-shadow:0 25px 80px #03091499,inset 0 1px #ffffff12;backdrop-filter:blur(23px);position:relative;overflow:hidden}
+.focusPanel:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,#e7c995,#fff0d0,#b9cbd5,transparent);opacity:.75}
+.focusPanel:after{content:"";position:absolute;right:-100px;top:-100px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,#d8bb8b18,transparent 68%);pointer-events:none}
+.focusPanelHead{position:relative;z-index:1}
+.focusPanelBrand{display:flex;align-items:center;gap:11px}.focusPanelGlyph{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:#f3d9a8;background:linear-gradient(145deg,#d8b9822a,#ffffff0a);border:1px solid #e5d1a62c;font-size:20px}.focusPanelBrand small{display:block;color:#b5c2cf;font-size:8px;letter-spacing:.19em;font-weight:900}.focusPanelBrand b{display:block;margin-top:3px;color:#fff3da;font-size:12px;letter-spacing:.12em}
+.focusLive{font-size:9px;letter-spacing:.1em;font-weight:900;color:#cbd9e4;background:#d9e5f012;padding:8px 11px;border:1px solid #d9e5f024;border-radius:30px}
+.focusModeTabs{position:relative;z-index:1;gap:8px;margin:17px 0 5px;padding:5px;border-radius:15px;background:#ffffff08;border:1px solid #ffffff0d}
+.focusModeBtn{padding:11px 10px;border-radius:11px;background:transparent;color:#bfccda;border-color:transparent;transition:background .2s,transform .2s,color .2s}
+.focusModeBtn:hover{transform:translateY(-1px);background:#ffffff0b}.focusModeBtn.active{background:linear-gradient(135deg,#f2dfbd,#d7bc90);color:#263247;border-color:#f7e6c7;box-shadow:0 5px 18px #d0b27b26}
+.focusDial{--focus-angle:0deg;position:relative;isolation:isolate;width:min(100%,270px);aspect-ratio:1;margin:21px auto 17px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(from -90deg,#e8c994 0deg var(--focus-angle),#ffffff18 var(--focus-angle) 360deg);box-shadow:0 0 0 1px #e7d4b51c,0 0 38px #e1c18b17,0 0 75px #b7cce00b}
+.focusDial:before{content:"";position:absolute;inset:9px;border-radius:50%;background:radial-gradient(circle at 42% 28%,#1c2c40,#101a2b 68%);border:1px solid #e3d3b321;box-shadow:inset 0 8px 25px #050b1555}
+.focusDial:after{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from -90deg,transparent 0 87%,#f6e5c3 88% 89%,transparent 90%);mask:radial-gradient(circle,transparent 62%,#000 64%);opacity:.7;pointer-events:none}
+.focusDialInner{position:relative;z-index:1;width:78%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.focusPhase{margin:0 0 5px;font-size:9px;letter-spacing:.2em;color:#dbc79e}
+.focusClock{font-size:clamp(58px,6vw,76px);font-weight:300;letter-spacing:-.07em;margin:0 0 2px;line-height:1.05;text-shadow:0 0 26px #e6d0a62c}
+.focusSubclock{font-size:10px;color:#b8c7d6;min-height:15px;white-space:nowrap}
+.focusRoundChip{display:flex;align-items:center;gap:7px;margin-top:12px;padding:5px 10px;border-radius:30px;background:#ffffff09;border:1px solid #ffffff12}.focusRoundChip span{font-size:7px;letter-spacing:.15em;color:#8fa1b4;font-weight:900}.focusRoundChip b{font-size:9px;color:#f0dfbf;letter-spacing:.06em}
+.focusProgress{height:4px;margin:0 0 16px;background:#ffffff13}.focusProgress span{background:linear-gradient(90deg,#c8a56d,#f4e2bf,#a8becb);box-shadow:0 0 12px #e7cb965c}
+.focusControls{position:relative;z-index:1;gap:9px}.focusControl{min-width:112px;padding:12px 16px;border-radius:13px;background:linear-gradient(135deg,#f2dfbd,#d6ba8d);color:#202c3e;font-size:11px;letter-spacing:.02em;box-shadow:0 7px 18px #03091428;transition:transform .2s,filter .2s}.focusControl:hover{transform:translateY(-2px);filter:brightness(1.06)}.focusControl.secondary{background:#ffffff0c;color:#d9e3ee;border:1px solid #ffffff20;box-shadow:none}.focusControl.save{background:transparent;border:1px solid #d6bd8b65;color:#ddc99f;box-shadow:none}.focusControl:disabled{opacity:.3}
+.focusSettingsTitle{display:flex;align-items:center;justify-content:space-between;margin:20px 1px 9px;padding-top:14px;border-top:1px solid #ffffff12;color:#8395a8;font-size:8px;letter-spacing:.2em;font-weight:900}.focusSettingsTitle i{font-style:normal;color:#dcc79d;font-size:15px}
+.focusSettings{position:relative;z-index:1;gap:10px;margin-top:0}.focusField label{font-size:8px;letter-spacing:.12em;font-weight:900;color:#9eafc1}.focusField input,.focusField select{padding:11px 12px;border-radius:11px;border:1px solid #d4deeb26;background:#17263a;color:#f3f1ea;font-size:11px;box-shadow:inset 0 1px #ffffff06}.focusField input:focus,.focusField select:focus{outline:2px solid #dec38f55;outline-offset:1px}
+.focusStatus{position:relative;z-index:1;margin-top:10px;padding:8px 10px;border-radius:10px;background:#ffffff08;color:#d6c6a2;font-size:10px;min-height:32px}
+.focusBelow{gap:15px}.focusStatCard{border-radius:19px;transition:background .25s,border-color .25s}
+/* Site-wide night palette is tied to the actual running state, not just the active page. */
+body.focus-running{background:radial-gradient(ellipse at 50% 0%,#162238 0%,#0b111d 48%,#070b12 100%)!important;color:#dce5f0!important;transition:background .35s,color .35s}
+body.focus-running .sideNav{background:rgba(8,13,22,.97)!important;border-color:#283449!important;box-shadow:10px 0 40px #0004}
+body.focus-running .navBrand b,body.focus-running .navSection,body.focus-running .subjectItem,body.focus-running .navItem{color:#b8c5d5!important}
+body.focus-running .navBrand small,body.focus-running .subjectItem small{color:#78899d!important}
+body.focus-running .navLogo,body.focus-running .brand .logo{background:linear-gradient(135deg,#34384b,#29374a)!important}
+body.focus-running .navItem.active,body.focus-running .navItem.focusNavItem.active{background:linear-gradient(100deg,#1b293d,#252338)!important;color:#f2d6a5!important;box-shadow:inset 3px 0 #d7b77c!important}
+body.focus-running .navDivider{background:#263246!important}
+body.focus-running .navBottom{background:linear-gradient(135deg,#182335,#211f31)!important;color:#c9d4e1!important}
+body.focus-running .app{color:#dce5f0!important}
+body.focus-running header{border-color:#263246!important}
+body.focus-running .brand h1,body.focus-running .focusIntro h2{color:#e8edf5!important}
+body.focus-running .brand small,body.focus-running .focusIntro p{color:#91a0b4!important}
+body.focus-running .accountBtn,body.focus-running .points,body.focus-running .localSavePill{background:#131e2e!important;border-color:#2c3b51!important;color:#d7e0eb!important;box-shadow:none!important}
+body.focus-running .panel,body.focus-running .stat,body.focus-running .pageCard,body.focus-running .metricCard,body.focus-running .courseCard,body.focus-running .topicMapCard,body.focus-running .focusStatCard,body.focus-running .dashCard,body.focus-running .reportCard,body.focus-running .noteEntry,body.focus-running .achievement{background:#111b2a!important;border-color:#29364a!important;color:#dbe4ef!important;box-shadow:0 12px 38px #0003!important}
+body.focus-running .panel h3,body.focus-running .stat b,body.focus-running .pageHead h2,body.focus-running .pageCard h3,body.focus-running .courseCard h3,body.focus-running .focusStatHead h3,body.focus-running .topicMapCard b,body.focus-running .noteEntry h4{color:#e7edf6!important}
+body.focus-running .panel p,body.focus-running .pageHead p,body.focus-running .pageCard p,body.focus-running .metricCard small,body.focus-running .courseCard p,body.focus-running .focusStatCard p,body.focus-running .reportRow,body.focus-running .noteEntry p,body.focus-running .emptyState{color:#9eacbe!important}
+body.focus-running .tab,body.focus-running .topic,body.focus-running .checkitem,body.focus-running .reportBar,body.focus-running .focusHistoryRow{background:#1a2638!important;color:#c8d3e0!important;border-color:#2c3b51!important}
+body.focus-running .focusHistoryRow b,body.focus-running .focusHistoryRow span{color:#cad5e2!important}
+body.focus-running .footer{color:#718198!important}
+body.focus-running .progress{background:#253348!important}
+@media(max-width:900px){.focusOverlay{grid-template-columns:minmax(0,1fr);gap:16px;min-height:740px;padding:24px}.focusStage{min-height:740px}.focusPanel{justify-self:center;max-width:610px}.focusCopy{max-width:650px}.focusDeskFront{height:13%}}
+@media(max-width:650px){
+ .focusIntro{display:block;margin-bottom:12px}.focusIntro h2{font-size:23px}.focusIntro p{font-size:11px}
+ .focusStage{min-height:0!important;border-radius:22px;box-shadow:0 18px 50px #10182a28,0 0 0 4px #ffffff70}
+ .focusOverlay{display:flex!important;flex-direction:column!important;min-height:0!important;padding:12px 10px 135px!important;gap:9px!important;align-content:start}
+ .focusPanel{order:-1!important;max-width:none!important;padding:14px 12px 12px!important;border-radius:19px!important}
+ .focusCopy{display:none!important}
+ .focusPanelHead b{font-size:10px}.focusPanelGlyph{width:31px;height:31px}.focusLive{font-size:8px;padding:6px 8px}
+ .focusModeTabs{gap:6px;margin:10px 0 2px;padding:4px}.focusModeBtn{font-size:10px;padding:9px 5px}
+ .focusDial{width:min(64vw,214px);margin:13px auto 12px}
+ .focusDialInner{width:82%}.focusPhase{font-size:8px;margin-bottom:3px}.focusClock{font-size:clamp(46px,13vw,58px)!important;margin:0!important}.focusSubclock{font-size:8px;min-height:12px}.focusRoundChip{margin-top:8px;padding:4px 8px}
+ .focusProgress{margin:0 0 11px}.focusControls{gap:6px}.focusControl{min-width:0!important;flex:1 1 27%;padding:10px 5px!important;font-size:9px}
+ .focusSettingsTitle{margin-top:13px;padding-top:10px}.focusSettings{gap:7px;margin-top:0!important}.focusField label{font-size:7px;margin-bottom:4px}.focusField input,.focusField select{padding:9px 7px!important;font-size:10px}
+ .focusStatus{margin-top:8px;font-size:9px;min-height:27px;padding:6px 8px}
+ .focusDeskFront{height:11%}.focusDeskLamp{transform:scale(.65);transform-origin:bottom left;left:3%}.focusDeskPlant{font-size:34px;right:4%}.focusDeskBooks{transform:scale(.7);transform-origin:bottom right;right:17%}.focusDeskCup{font-size:23px;left:22%}.focusDeskCat{font-size:19px;left:43%}
+ .focusWindowFrame{border-width:7px}.focusWindowGrid{inset:2% 2% 10%}.focusBelow{grid-template-columns:1fr!important;gap:9px;margin-top:11px}.focusStatCard{padding:13px!important}
+ body.focus-running .sideNav{background:rgba(7,11,19,.98)!important;border-top-color:#283449!important}
+}
+@media(prefers-reduced-motion:reduce){.focusSky *,.focusStage *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 </style>
 </head><body>
 <aside class="sideNav" id="sideNav" aria-label="Ana gezinme">
@@ -1429,20 +1532,28 @@ function renderFocusPage(){
  return `<div class="focusPage">
   <div class="focusIntro"><div><div class="pageEyebrow">KENDİ KÜÇÜK ODAĞIN · LO-FI STUDY ROOM</div><h2>Yağmur dışarıda, odak sende. 🌧️</h2><p>Biraz sessizlik, yumuşak bir ritim ve tek bir küçük hedef. Bugün kendin için ayırdığın zaman burada birikir.</p></div></div>
   <section class="focusStage" aria-label="Yağmurlu manzara eşliğinde ders sayacı">
-   <div class="focusSky"><div class="focusStars"></div><div class="focusMoon"></div><div class="focusCloud"></div><div class="focusCloud cloudTwo"></div><div class="focusHills back"></div><div class="focusHills"></div><div class="focusTown">${Array.from({length:14},(_,i)=>`<div class="focusHouse" style="--h:${30+(i*17)%82}px"></div>`).join('')}</div><div class="focusMist"></div><div class="focusRain rainFar"></div><div class="focusRain"></div>${rainDrops()}<div class="focusSill"></div><div class="focusWindowFrame"></div></div>
+   <div class="focusSky">
+    <div class="focusAtmosphere"></div><div class="focusStars"></div><div class="focusMoon"></div><div class="focusCloud"></div><div class="focusCloud cloudTwo"></div>
+    <div class="focusWindowGrid"></div><div class="focusHills back"></div><div class="focusHills"></div>
+    <div class="focusTown">${Array.from({length:18},(_,i)=>`<div class="focusHouse" style="--h:${26+(i*19)%91}px;--window-delay:${-(i%6)*.7}s"></div>`).join('')}</div>
+    <div class="focusMist"></div><div class="focusRain rainFar"></div><div class="focusRain"></div>${rainDrops()}
+    <div class="focusRainReflection"></div><div class="focusDeskFront"><div class="focusDeskLamp"><i></i></div><div class="focusDeskPlant">🌿</div><div class="focusDeskBooks"><i></i><i></i><i></i></div><div class="focusDeskCup">☕<span>〰</span></div><div class="focusDeskCat">🐈‍⬛</div></div>
+    <div class="focusSill"></div><div class="focusWindowFrame"></div>
+   </div>
    <div class="focusOverlay">
     <div class="focusCopy"><div class="focusEyebrow">🌙 RAINY NIGHT · DEEP FOCUS</div><h3>Yavaşla.<br>Bir soruyla başla.</h3><p>Her çalışma oturumu küçük bir ilerlemedir. Zamanı takip et, molanı unutma ve kendine karşı nazik ol.</p><div class="focusQuote">“Büyük işler, her gün atılan küçük adımlarla tamamlanır.”</div><div class="focusDeskItems"><span class="focusBook">📖</span><span class="focusMug">☕<i class="focusSteam">〰</i><i class="focusSteam two">〰</i></span><span>🐈‍⬛</span></div></div>
     <div class="focusPanel">
-     <div class="focusPanelHead"><b>🌧️ STUDY SESSION</b><span class="focusLive" id="focusLiveState">● HAZIR</span></div>
+     <div class="focusPanelHead"><div class="focusPanelBrand"><span class="focusPanelGlyph">✦</span><div><small>THE RAINY DESK</small><b>FOCUS SESSION</b></div></div><span class="focusLive" id="focusLiveState">● HAZIR</span></div>
      <div class="focusModeTabs"><button class="focusModeBtn active" id="focusModePomodoro" onclick="mfaFocusSetMode('pomodoro')">🍅 Pomodoro</button><button class="focusModeBtn" id="focusModeStopwatch" onclick="mfaFocusSetMode('stopwatch')">⏱ Serbest sayaç</button></div>
-     <div class="focusPhase" id="focusPhase">ODAK ZAMANI</div><div class="focusClock" id="focusClock">25:00</div><div class="focusSubclock" id="focusSubclock">25 dakika çalışma · 5 dakika mola</div>
+     <div class="focusDial" id="focusDial" style="--focus-angle:0deg"><div class="focusDialInner"><div class="focusPhase" id="focusPhase">ODAK ZAMANI</div><div class="focusClock" id="focusClock">25:00</div><div class="focusSubclock" id="focusSubclock">25 dakika çalışma · 5 dakika mola</div><div class="focusRoundChip"><span>ODAK TURU</span><b id="focusRoundCount">0 / 4</b></div></div></div>
      <div class="focusProgress"><span id="focusProgressBar"></span></div>
-     <div class="focusControls"><button class="focusControl" id="focusMainBtn" onclick="mfaFocusToggle()">▶ Başlat</button><button class="focusControl secondary" onclick="mfaFocusReset()">↺ Sıfırla</button><button class="focusControl secondary" id="focusFinishBtn" onclick="mfaFocusFinish()">✓ Oturumu kaydet</button></div>
+     <div class="focusControls"><button class="focusControl" id="focusMainBtn" onclick="mfaFocusToggle()">▶ Başlat</button><button class="focusControl secondary" onclick="mfaFocusReset()">↺ Sıfırla</button><button class="focusControl save" id="focusFinishBtn" onclick="mfaFocusFinish()">✓ Oturumu kaydet</button></div>
+     <div class="focusSettingsTitle"><span>SESSION DETAILS</span><i>✧</i></div>
      <div class="focusSettings">
-      <div class="focusField" id="focusDurationField"><label for="focusDuration">Odak süresi</label><select id="focusDuration" onchange="mfaFocusDurationChange(this.value)"><option value="25">25 dakika</option><option value="40">40 dakika</option><option value="50">50 dakika</option><option value="60">60 dakika</option></select></div>
-      <div class="focusField"><label for="focusSubject">Çalışılan ders</label><select id="focusSubject" onchange="mfaFocusSubjectChange(this.value)"><option>Ders çalışması</option><option>Fizik</option><option>Kimya</option><option>Biyoloji</option><option>Matematik</option><option>Geometri</option><option>Türkçe</option><option>Diğer</option></select></div>
-      <div class="focusField"><label for="focusTask">Bugünkü küçük hedefin</label><input id="focusTask" maxlength="70" placeholder="Örn. Hareket testini bitir" oninput="mfaFocusTaskChange(this.value)"></div>
-      <div class="focusField"><label for="focusGoal">Günlük çalışma hedefi</label><select id="focusGoal" onchange="mfaFocusGoalChange(this.value)"><option value="60">1 saat</option><option value="90">1,5 saat</option><option value="120">2 saat</option><option value="180">3 saat</option><option value="240">4 saat</option><option value="300">5 saat</option></select></div>
+      <div class="focusField" id="focusDurationField"><label for="focusDuration">ODAK SÜRESİ</label><select id="focusDuration" onchange="mfaFocusDurationChange(this.value)"><option value="25">25 dakika</option><option value="40">40 dakika</option><option value="50">50 dakika</option><option value="60">60 dakika</option></select></div>
+      <div class="focusField"><label for="focusSubject">ÇALIŞILAN DERS</label><select id="focusSubject" onchange="mfaFocusSubjectChange(this.value)"><option>Ders çalışması</option><option>Fizik</option><option>Kimya</option><option>Biyoloji</option><option>Matematik</option><option>Geometri</option><option>Türkçe</option><option>Diğer</option></select></div>
+      <div class="focusField"><label for="focusTask">BUGÜNKÜ KÜÇÜK HEDEFİN</label><input id="focusTask" maxlength="70" placeholder="Örn. Hareket testini bitir" oninput="mfaFocusTaskChange(this.value)"></div>
+      <div class="focusField"><label for="focusGoal">GÜNLÜK ÇALIŞMA HEDEFİ</label><select id="focusGoal" onchange="mfaFocusGoalChange(this.value)"><option value="60">1 saat</option><option value="90">1,5 saat</option><option value="120">2 saat</option><option value="180">3 saat</option><option value="240">4 saat</option><option value="300">5 saat</option></select></div>
      </div>
      <div class="focusStatus" id="focusStatus" role="status">${esc(focusStatus)}</div>
     </div>
@@ -1454,7 +1565,9 @@ function renderFocusPage(){
   </div>
  </div>`;
 }
+function syncFocusTheme(){const active=!!focusTimer.running;document.body.classList.toggle('focus-running',active);const meta=document.querySelector('meta[name=theme-color]');if(meta)meta.setAttribute('content',active?'#080d16':'#fff4f7');}
 function renderFocusClock(){
+ syncFocusTheme();
  const clock=document.getElementById('focusClock');if(!clock)return;
  const running=focusTimer.running;
  let display,sub,phase;
@@ -1470,7 +1583,7 @@ function renderFocusClock(){
  const subel=document.getElementById('focusSubclock');if(subel)subel.textContent=sub;
  const main=document.getElementById('focusMainBtn');if(main)main.textContent=running?'Ⅱ Duraklat':focusTimer.mode==='stopwatch'?'▶ Başlat':focusTimer.phase==='focus'?'▶ Başlat':'▶ Molayı başlat';
  const live=document.getElementById('focusLiveState');if(live){live.textContent=running?'● ÇALIŞIYOR':'● HAZIR';live.style.color=running?'#d9e7c3':'#cbd9e4';}
- const bar=document.getElementById('focusProgressBar');if(bar){let percent=0;if(focusTimer.mode==='stopwatch')percent=Math.min(100,((focusTimer.elapsed+(running?Date.now()-focusTimer.startedAt:0)/1000)%3600)/3600*100);else{const rem=running?Math.max(0,focusTimer.deadline-Date.now())/1000:focusTimer.remaining;percent=(focusTimer.duration-rem)/focusTimer.duration*100;}bar.style.width=Math.max(0,Math.min(100,percent))+'%';}
+ const bar=document.getElementById('focusProgressBar');let percent=0;if(focusTimer.mode==='stopwatch')percent=Math.min(100,((focusTimer.elapsed+(running?Date.now()-focusTimer.startedAt:0)/1000)%3600)/3600*100);else{const rem=running?Math.max(0,focusTimer.deadline-Date.now())/1000:focusTimer.remaining;percent=(focusTimer.duration-rem)/focusTimer.duration*100;}percent=Math.max(0,Math.min(100,percent));if(bar)bar.style.width=percent+'%';const dial=document.getElementById('focusDial');if(dial)dial.style.setProperty('--focus-angle',(percent*3.6)+'deg');const rounds=document.getElementById('focusRoundCount');if(rounds)rounds.textContent=focusTimer.mode==='stopwatch'?'∞':`${focusTimer.completedRounds%4} / 4`;
  const finish=document.getElementById('focusFinishBtn');if(finish)finish.disabled=(focusTimer.mode==='stopwatch'?focusTimer.elapsed+(running?(Date.now()-focusTimer.startedAt)/1000:0):focusTimer.phase==='focus'?focusTimer.duration-focusTimer.remaining:0)<60;
  const dur=document.getElementById('focusDurationField');if(dur)dur.style.opacity=focusTimer.mode==='pomodoro'&&focusTimer.phase==='focus'&&!running?'1':'.45';
  const modeP=document.getElementById('focusModePomodoro'),modeS=document.getElementById('focusModeStopwatch');if(modeP)modeP.classList.toggle('active',focusTimer.mode==='pomodoro');if(modeS)modeS.classList.toggle('active',focusTimer.mode==='stopwatch');
@@ -1534,6 +1647,7 @@ if(!localStorage.getItem(V17_BANK_KEY)){
 }
 // Export a small diagnostic snapshot for browser verification.
 window.MINIK_AKADEMI_V17={version:'17.0',physicsTopics:units.length,physicsQuestions:units.reduce((n,u)=>n+u.bank.length,0),uniquePhysicsStems:440,focusTimer:true,focusModes:['pomodoro','stopwatch']};
+window.MINIK_AKADEMI_V18={version:'18.0',nightModeOnTimer:true,focusDial:true,studyRoomScene:true};
 })();
 </script>
 
