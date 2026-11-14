@@ -3882,7 +3882,7 @@ html body #extraPage .focusPage .focusPanel:after{
  clearOpaqueFocusLayer();
  const extra=document.getElementById('extraPage');
  if(extra&&typeof MutationObserver!=='undefined'){
-  new MutationObserver(clearOpaqueFocusLayer).observe(extra,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class','style']});
+  new MutationObserver(clearOpaqueFocusLayer).observe(extra,{childList:true,subtree:true});
  }
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)clearOpaqueFocusLayer();});
  window.MINIK_AKADEMI_V31={focusOverlayTransparent:true,version:'31.0'};
