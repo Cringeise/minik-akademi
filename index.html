@@ -2685,7 +2685,7 @@ body.mfa-night .app .mfaNightSurface a{color:#cdbef0!important}
 <script id="minik-akademi-v21-night-surface-scanner">
 (function(){
  'use strict';
- const roots=['.app','#extraPage','.sideNav'];
+ const roots=['.app','.sideNav']; // #extraPage is already inside .app; avoid scanning its DOM twice.
  function isPale(color){const m=String(color||'').match(/rgba?\(([^)]+)\)/);if(!m)return false;const v=m[1].split(',').slice(0,3).map(x=>Number(x.trim()));return v.length===3&&v.every(Number.isFinite)&&Math.min(...v)>218&&Math.max(...v)-Math.min(...v)<46;}
  function scan(){
   const night=document.body.classList.contains('mfa-night');
