@@ -1,0 +1,76 @@
+name: Verify Minik Akademi v36
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "index.html"
+      - "supabase/**"
+      - "README.md"
+      - "gizlilik.html"
+      - ".github/workflows/verify-v36.yml"
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check inline JavaScript syntax and source invariants
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from collections import Counter
+          from pathlib import Path
+          import re, sys
+          html = Path("index.html").read_text(encoding="utf-8")
+          class Scan(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids=[]
+                  self.scripts=[]
+                  self.current=None
+              def handle_starttag(self, tag, attrs):
+                  attrs=dict(attrs)
+                  if "id" in attrs: self.ids.append(attrs["id"])
+                  if tag.lower()=="script" and "src" not in attrs:
+                      typ=attrs.get("type","").lower()
+                      if typ in ("","text/javascript","application/javascript","module","text/ecmascript"):
+                          self.current=[attrs.get("id","inline"),[]]
+              def handle_data(self,data):
+                  if self.current is not None: self.current[1].append(data)
+              def handle_endtag(self,tag):
+                  if tag.lower()=="script" and self.current is not None:
+                      self.scripts.append((self.current[0],"".join(self.current[1])))
+                      self.current=None
+          scan=Scan()
+          scan.feed(html)
+          if not scan.scripts: raise SystemExit("No inline JS blocks found")
+          out=Path("/tmp/minik-inline"); out.mkdir(exist_ok=True)
+          for i,(name,code) in enumerate(scan.scripts):
+              if not code.strip(): continue
+              (out/f"{i:03d}.js").write_text(code,encoding="utf-8")
+          duplicates=[k for k,v in Counter(scan.ids).items() if v>1 and k!="resetPasswordBtn"]
+          if duplicates: raise SystemExit("Unexpected duplicate HTML IDs: "+", ".join(duplicates))
+          required=[
+              "minik-akademi-v17-focus-script",
+              "mfa-v27-admin-usage-and-room-depth",
+              "mfa-v36-question-tracking",
+              "mfaRecordQuestionStat",
+              "admin_get_user_usage",
+              "mfa_usage_session_v1",
+              "h>=19||h<7",
+              "mfaRainToggle",
+              "student_progress",
+          ]
+          for item in required:
+              if item not in html: raise SystemExit("Missing expected feature: "+item)
+          print(f"Found {len(scan.scripts)} inline JavaScript blocks; required features and IDs checked.")
+          PY
+          for f in /tmp/minik-inline/*.js; do node --check "$f"; done
+      - name: Confirm SQL migration and privacy wording
+        run: |
+          test -s supabase/admin_usage_analytics_v36.sql
+          grep -q "app_metadata" supabase/admin_usage_analytics_v36.sql
+          grep -q "Hesap bazında kullanım ölçümü" gizlilik.html
+          echo "SQL and privacy files passed basic checks."
