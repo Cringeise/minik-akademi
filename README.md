@@ -12,6 +12,15 @@ Pastel tasarımlı, telefon ve masaüstü uyumlu TYT fen öğrenme platformu. An
 
 Fizik bankası 11 konuda 440 farklı soru kökü içerir. Her konuda dört ayrı test ve toplam 40 soru bulunur.
 
+## Yönetim paneli ve kullanım raporları
+
+- Yönetici rolüne sahip hesaplar için hesap bazında yaklaşık site kullanım süresi, son etkinlik ve bölüm etkinlik sayaçları.
+- Kaydedilmiş Pomodoro/serbest sayaç oturumlarının toplam süresi ve ders dağılımı.
+- Soru yanıt sayıları, doğru/yanlış toplamları, tamamlanan konular ve XP.
+- Konu bazlı başarı dağılımı, bu sürümden itibaren kaydedilen yanıtlarda birikir.
+- Yönetim ekranı ders notlarını, seçilen cevapları, görev metinlerini veya parolaları göstermez. Site kullanım süresi ile odak sayacı süresi ayrı ölçülür.
+- Veritabanı kurulumu: `supabase/admin_usage_analytics_v36.sql`. Yönetici yetkisi güvenilir `app_metadata.role = admin` claim'i üzerinden denetlenir.
+
 ## Ders Sayacı ve Lo-Fi çalışma odası
 
 - Fotoğraf gerçekçiliğinde yağmurlu gece çalışma odası.
