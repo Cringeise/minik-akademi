@@ -637,6 +637,47 @@ body.mfa-night .app .motionTrackVisual .labTrackLabels{
   text-shadow:0 1px 3px rgba(0,0,0,.65);
 }
 </style>
+<style id="mfa-v36-admin-enhanced-style">
+#mfaAdminPanel{max-width:1240px;margin:0 auto}
+#mfaAdminPanel .adminCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin:16px 0}
+#mfaAdminPanel .adminMetric{min-width:0;background:linear-gradient(135deg,#fff7fa,#f5f1ff);border:1px solid #eee5f1;border-radius:17px;padding:16px}
+#mfaAdminPanel .adminMetric small{display:block;line-height:1.5}
+#mfaAdminPanel .adminMetric b{display:block;font-size:clamp(20px,2vw,27px);margin:7px 0 3px;overflow-wrap:anywhere}
+#mfaAdminPanel .adminActions{display:flex;gap:8px;flex-wrap:wrap}
+#mfaAdminPanel .adminTableCard{margin-top:12px}
+#mfaAdminPanel .adminTableHeading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+#mfaAdminPanel .adminTableWrap{overflow:auto;border:1px solid #eee6ef;border-radius:17px;background:#fff}
+#mfaAdminPanel table{width:100%;border-collapse:collapse;min-width:920px;font-size:12px}
+#mfaAdminPanel th,#mfaAdminPanel td{text-align:left;padding:12px;border-bottom:1px solid #f0eaf1;vertical-align:top;line-height:1.5}
+#mfaAdminPanel th{background:#faf7fc;color:#8a7d96;font-size:10px;letter-spacing:.05em}
+#mfaAdminPanel td small{display:block;color:#8a7d96;margin-top:4px;line-height:1.45}
+#mfaAdminPanel tr:last-child>td{border-bottom:0}
+#mfaAdminPanel .adminMuted{color:#95899e;font-size:11px}
+#mfaAdminPanel .adminPrivacy{padding:14px 16px;border-radius:14px;background:#f5f1ff;color:#776a87;font-size:12px;line-height:1.65;margin-top:14px}
+#mfaAdminPanel .adminDetails{margin-top:8px;min-width:120px}
+#mfaAdminPanel .adminDetails summary{cursor:pointer;color:#88739e;font-weight:700}
+#mfaAdminPanel .adminDetailGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:300px;margin-top:10px;padding:12px;border:1px solid #eee7f0;border-radius:12px;background:#fcfaff}
+#mfaAdminPanel .adminDetailGrid b{display:block;margin-bottom:7px}
+#mfaAdminPanel .adminDetailFull{grid-column:1/-1}
+#mfaAdminPanel .adminChipList{display:flex;gap:6px;flex-wrap:wrap}
+#mfaAdminPanel .adminChip{display:inline-block;background:#f2edf8;color:#665a76;border-radius:999px;padding:5px 8px;margin:2px;font-size:11px}
+#mfaAdminPanel .adminTopicRow{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:7px 0;border-bottom:1px solid #eee7f0;font-size:12px}
+#mfaAdminPanel .adminTopicRow:last-child{border-bottom:0}
+#mfaAdminPanel .mfaAdminError{color:#9c4e58;white-space:normal;overflow-wrap:anywhere}
+body.mfa-night #mfaAdminPanel{color:#dce5f0}
+body.mfa-night #mfaAdminPanel .adminMetric{background:linear-gradient(135deg,#182437,#202239)!important;border-color:#34445a!important;color:#e7edf6!important}
+body.mfa-night #mfaAdminPanel .adminMetric small,body.mfa-night #mfaAdminPanel td small{color:#a9b9cd!important}
+body.mfa-night #mfaAdminPanel .adminTableWrap{background:#101b2a!important;border-color:#34445a!important}
+body.mfa-night #mfaAdminPanel table{color:#dce5f0}
+body.mfa-night #mfaAdminPanel th{background:#1a293d!important;color:#bcc9d9!important}
+body.mfa-night #mfaAdminPanel td,body.mfa-night #mfaAdminPanel th{border-color:#2b3a50!important}
+body.mfa-night #mfaAdminPanel .adminDetailGrid{background:#111d2c!important;border-color:#34445a!important}
+body.mfa-night #mfaAdminPanel .adminChip{background:#27354a!important;color:#dce5f0!important}
+body.mfa-night #mfaAdminPanel .adminPrivacy{background:#1b2940!important;color:#bdc9dc!important}
+body.mfa-night #mfaAdminPanel .adminDetails summary{color:#e6cfa4!important}
+body.mfa-night #mfaAdminPanel .adminTopicRow{border-color:#2b3a50}
+@media(max-width:650px){#mfaAdminPanel .adminCards{grid-template-columns:repeat(2,minmax(0,1fr))}#mfaAdminPanel .adminDetailGrid{grid-template-columns:1fr}#mfaAdminPanel .adminDetailFull{grid-column:auto}#mfaAdminPanel .adminActions{width:100%}#mfaAdminPanel .adminActions button{flex:1}}
+</style>
 </head><body>
 <aside class="sideNav" id="sideNav" aria-label="Ana gezinme">
   <div class="navBrand"><div class="navLogo">🌷</div><div><b>Minik Akademi</b><small>öğrenmenin tatlı hâli</small></div></div>
@@ -717,7 +758,7 @@ async function syncNow(silent=false){
  finally{mfaBusy=false;if(mfaSyncAgain){mfaSyncAgain=false;mfaQueueSync();}}
 }
 async function mfaLoadCloud(){if(!mfaClient||!mfaUser)return;try{const {data,error}=await mfaClient.from('student_progress').select('data').eq('user_id',mfaUser.id).maybeSingle();if(error)throw error;if(data&&data.data){mfaMerge(data.data)}else{await syncNow(true)}mfaUpdateAccountUI()}catch(e){mfaSetMessage('Bulut verisi okunamadı: '+(e.message||'SQL kurulumunu kontrol et.'))}}
-async function authAction(mode){if(!mfaClient){mfaSetMessage('Hesap bağlantısı başlatılamadı. İnternet bağlantısını ve Supabase yapılandırmasını kontrol et.');return}try{if(mode==='logout'){const {error}=await mfaClient.auth.signOut();if(error)throw error;mfaUser=null;mfaUpdateAccountUI();mfaSetMessage('Çıkış yapıldı. Bu cihazdaki yerel ilerlemen korunuyor.');return}const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;if(!email||password.length<8){mfaSetMessage('Geçerli bir e-posta ve en az 8 karakterli şifre gir.');return}mfaSetMessage('İşlem yapılıyor…');let result;if(mode==='signup')result=await mfaClient.auth.signUp({email,password});else result=await mfaClient.auth.signInWithPassword({email,password});if(result.error)throw result.error;if(mode==='signup'&&!result.data.session){mfaSetMessage('Hesap oluşturuldu. E-posta doğrulama bağlantısını kontrol et; doğruladıktan sonra giriş yap.');return}mfaUser=result.data.user||null;mfaUpdateAccountUI();await mfaLoadCloud();mfaSetMessage('Hoş geldin! İlerlemen eşitlendi.')}catch(e){mfaSetMessage('İşlem tamamlanamadı: '+(e.message||'Bilgilerini kontrol et.'))}}
+async function authAction(mode){if(!mfaClient){mfaSetMessage('Hesap bağlantısı başlatılamadı. İnternet bağlantısını ve Supabase yapılandırmasını kontrol et.');return}try{if(mode==='logout'){const {error}=await mfaClient.auth.signOut();if(error)throw error;mfaUser=null;mfaUpdateAccountUI();mfaSetMessage('Çıkış yapıldı. Bu cihazdaki yerel ilerlemen korunuyor.');return}const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;if(!email||password.length<8){mfaSetMessage('Geçerli bir e-posta ve en az 8 karakterli şifre gir.');return}mfaSetMessage('İşlem yapılıyor…');let result;if(mode==='signup')result=await mfaClient.auth.signUp({email,password});else result=await mfaClient.auth.signInWithPassword({email,password});if(result.error)throw result.error;if(mode==='signup'&&!result.data.session){mfaSetMessage('Hesap oluşturuldu. E-posta doğrulama bağlantısını kontrol et; doğruladıktan sonra giriş yap.');return}mfaUser=result.data.user||null;mfaUpdateAccountUI();await mfaLoadCloud();mfaSetMessage('Hoş geldin! İlerlemen eşitlendi.')}catch(e){const message=String(e?.message||'');if(/email rate limit exceeded|over_email_send_rate_limit|too many requests/i.test(message)){mfaSetMessage('E-posta gönderim sınırına ulaşıldı. Bir süre bekleyip yeniden dene; art arda tekrar deneme.');return}mfaSetMessage('İşlem tamamlanamadı: '+(message||'Bilgilerini kontrol et.'))}}
 function mfaEnhanceLesson(){const v=document.getElementById('view');if(!v||tab!=='lesson'||v.querySelector('.notesBox'))return;const idx=current, checks=mfaChecks[idx]||[];const prompts=['Temel kavramları kendi cümlemle açıklayabiliyorum.','Formüllerdeki sembollerin anlamını biliyorum.','Birimleri doğru kullanabiliyorum.','Bir örnekte verilenleri ayırt edebiliyorum.'];const box=document.createElement('section');box.className='notesBox';box.innerHTML=`<h3>📝 Benim ders defterim</h3><p class="tiny">Kendi cümlelerinle not al. Yazdıkların otomatik kaydedilir.</p><textarea id="personalNotes" placeholder="Bugün öğrendiğim en önemli şey…"></textarea><div class="tiny" id="noteSaved">Notların otomatik kaydedilir.</div><h3 style="margin-top:17px">🌱 Kendimi kontrol ediyorum</h3><div class="checklist" id="lessonChecks"></div><div style="margin-top:14px"><button class="btn" id="markComplete">${completed.includes(idx)?'✓ Konu tamamlandı':'Konuyu tamamlandı olarak işaretle'}</button></div></section>`;v.appendChild(box);const ta=box.querySelector('#personalNotes');ta.value=mfaNotes[idx]||'';ta.addEventListener('input',()=>{mfaNotes[idx]=ta.value;mfaLocalSave();box.querySelector('#noteSaved').textContent='✓ Notun kaydedildi'});const list=box.querySelector('#lessonChecks');list.innerHTML=prompts.map((x,i)=>`<label class="checkitem"><input type="checkbox" data-check="${i}" ${checks[i]?'checked':''}> <span>${x}</span></label>`).join('');list.querySelectorAll('input').forEach(el=>el.addEventListener('change',()=>{mfaChecks[idx]=mfaChecks[idx]||[];mfaChecks[idx][Number(el.dataset.check)]=el.checked;mfaLocalSave()}));box.querySelector('#markComplete').addEventListener('click',()=>{if(!completed.includes(idx)){completed.push(idx);points+=10}mfaLocalSave();listTopicsSafe();render();});}
 function listTopicsSafe(){try{list()}catch(e){}}
 const mfaBaseRender=render;
@@ -919,6 +960,20 @@ function escapeAcademyText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp
 
   const previousLocalSave=window.mfaLocalSave;
   window.mfaLocalSave=function(){if(previousLocalSave)previousLocalSave();window.renderDashboard();};
+  window.mfaRecordQuestionStat=function(subject,topic,isCorrect){
+    const day=todayKey();
+    const record=mfaActivity[day]||{attempts:0,correct:0};
+    record.attempts=(Number(record.attempts)||0)+1;
+    record.correct=(Number(record.correct)||0)+(isCorrect?1:0);
+    record.topicStats=record.topicStats&&typeof record.topicStats==='object'?record.topicStats:{};
+    const label=[String(subject||'Ders'),String(topic||'Genel')].join(' · ').slice(0,140);
+    const stat=record.topicStats[label]||{attempts:0,correct:0};
+    stat.attempts=(Number(stat.attempts)||0)+1;
+    stat.correct=(Number(stat.correct)||0)+(isCorrect?1:0);
+    record.topicStats[label]=stat;
+    mfaActivity[day]=record;
+    window.mfaLocalSave();
+  };
   const previousAnswer=window.answer;
   window.answer=function(choice){
     const key=`${current}-${testSet}-${qIndex}`;
@@ -926,8 +981,7 @@ function escapeAcademyText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp
     const q=units[current]?.bank?.[testSet*10+qIndex];
     if(previousAnswer)previousAnswer(choice);
     if(!q||answers[key]===undefined)return;
-    const day=todayKey();const a=mfaActivity[day]||{attempts:0,correct:0};a.attempts=(Number(a.attempts)||0)+1;if(Number(choice)===Number(q.ans))a.correct=(Number(a.correct)||0)+1;mfaActivity[day]=a;
-    window.mfaLocalSave();
+    window.mfaRecordQuestionStat?.(units[current]?.subject||'Fizik',units[current]?.title||'Genel',Number(choice)===Number(q.ans));
   };
 
   // A gentle 25-minute focus clock. It is not a screen lock and can be paused any time.
@@ -2747,14 +2801,42 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
 <script id="mfa-v27-admin-usage-and-room-depth">
 (function(){
  'use strict';
- let usageTimer=null,usageSession=null,currentPage='home';
- const pageNames={home:'Ana sayfa',courses:'Dersler',focus:'Pomodoro',progress:'İlerleme',notes:'Notlar',achievements:'Başarımlar',other:'Diğer'};
+ let usageTimer=null, usageSession=null, currentPage='home';
+ const pageNames={
+  home:'Ana sayfa',courses:'Dersler',focus:'Pomodoro',lab:'Deney laboratuvarı',
+  physics:'Fizik',chemistry:'Kimya',biology:'Biyoloji',progress:'İlerleme',
+  reports:'Raporlar',notebook:'Not defteri',achievements:'Başarımlar',
+  wrongbook:'Yanlış defteri',formulas:'Formüller',map:'Konu haritası',
+  sources:'Kaynaklar',notes:'Notlar',other:'Diğer'
+ };
+ const isAdminUser=user=>!!(user&&user.app_metadata&&user.app_metadata.role==='admin');
+ const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ }[ch]));
+ function fmtDuration(value){
+  const n=Math.max(0,Math.floor(Number(value)||0));
+  const h=Math.floor(n/3600),m=Math.floor((n%3600)/60);
+  if(h)return h+' sa '+m+' dk';
+  if(m)return m+' dk';
+  return n+' sn';
+ }
+ function fmtDate(value){
+  if(!value)return 'Henüz yok';
+  const d=new Date(value);
+  return Number.isNaN(d.getTime())?'—':d.toLocaleString('tr-TR',{dateStyle:'medium',timeStyle:'short'});
+ }
  function getSessionId(){
   if(usageSession)return usageSession;
   try{
    usageSession=sessionStorage.getItem('mfa_usage_session_v1');
-   if(!usageSession){usageSession=crypto.randomUUID();sessionStorage.setItem('mfa_usage_session_v1',usageSession);}
-  }catch(_){try{usageSession=crypto.randomUUID()}catch(e){return null}}
+   if(!usageSession){
+    usageSession=(crypto&&crypto.randomUUID)?crypto.randomUUID():
+      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+       const r=Math.random()*16|0;return (c==='x'?r:(r&3|8)).toString(16);
+      });
+    sessionStorage.setItem('mfa_usage_session_v1',usageSession);
+   }
+  }catch(_){return null;}
   return usageSession;
  }
  function track(page){
@@ -2762,10 +2844,13 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
   const sid=getSessionId();if(!sid)return;
   const allowed=Object.prototype.hasOwnProperty.call(pageNames,page)?page:'other';
   mfaClient.rpc('record_usage',{p_session_id:sid,p_page:allowed}).then(({error})=>{
-   if(error)console.warn('Usage analytics:',error.message);
-  }).catch(e=>console.warn('Usage analytics:',e));
+   if(error)console.warn('Minik Akademi usage tracking:',error.message);
+  }).catch(error=>console.warn('Minik Akademi usage tracking:',error));
  }
- function stopTracking(){if(usageTimer)clearInterval(usageTimer);usageTimer=null;usageSession=null;}
+ function stopTracking(){
+  if(usageTimer)clearInterval(usageTimer);
+  usageTimer=null;usageSession=null;
+ }
  function startTracking(){
   if(!mfaClient||!mfaUser){stopTracking();return;}
   if(usageTimer)clearInterval(usageTimer);
@@ -2773,95 +2858,161 @@ body.mfa-night .app :is(.commentaryFeedback.try){background:#3a2c20!important;co
   usageTimer=setInterval(()=>track(currentPage),60000);
  }
  function updateAdminButton(){
-  const ownerEmail=String(mfaUser?.email||'').toLowerCase();const isAdmin=!!(mfaUser&&(mfaUser.app_metadata?.role==='admin'||ownerEmail==='ebrarzakirsag@gmail.com'));
-  let b=document.getElementById('mfaAdminButton');
-  if(isAdmin&&!b){
-   b=document.createElement('button');b.type='button';b.id='mfaAdminButton';b.className='accountBtn';
-   b.textContent='🛠 Yönetim';b.type='button';b.onclick=()=>window.openAdminPanel();
+  const allowed=isAdminUser(mfaUser);
+  let button=document.getElementById('mfaAdminButton');
+  if(allowed&&!button){
+   button=document.createElement('button');
+   button.type='button';button.id='mfaAdminButton';button.className='accountBtn';
+   button.textContent='🛠 Yönetim';button.setAttribute('aria-label','Yönetim panelini aç');
+   button.onclick=()=>window.openAdminPanel();
    const account=document.getElementById('accountButton');
-   if(account&&account.parentElement)account.insertAdjacentElement('afterend',b);
-  }else if(!isAdmin&&b)b.remove();
+   if(account&&account.parentElement)account.insertAdjacentElement('afterend',button);
+  }else if(!allowed&&button)button.remove();
   if(mfaUser)startTracking();else stopTracking();
  }
  const oldAccountUpdate=window.mfaUpdateAccountUI;
  if(typeof oldAccountUpdate==='function'){
-  window.mfaUpdateAccountUI=function(){const result=oldAccountUpdate.apply(this,arguments);updateAdminButton();return result;};
+  window.mfaUpdateAccountUI=function(){
+   const value=oldAccountUpdate.apply(this,arguments);
+   updateAdminButton();
+   return value;
+  };
  }
  const oldGoPage=window.goPage;
  if(typeof oldGoPage==='function'){
-  window.goPage=function(page){currentPage=Object.prototype.hasOwnProperty.call(pageNames,page)?page:'other';const result=oldGoPage.apply(this,arguments);track(currentPage);return result;};
+  window.goPage=function(page){
+   currentPage=Object.prototype.hasOwnProperty.call(pageNames,page)?page:'other';
+   const value=oldGoPage.apply(this,arguments);
+   track(currentPage);
+   return value;
+  };
  }
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)track(currentPage);});
  window.addEventListener('pagehide',()=>track(currentPage));
- function fmtDuration(seconds){
-  const n=Math.max(0,Number(seconds)||0),h=Math.floor(n/3600),m=Math.floor((n%3600)/60);
-  if(h)return h+' sa '+m+' dk';if(m)return m+' dk';return Math.floor(n)+' sn';
+
+ function renderPageCounts(counts){
+  const entries=Object.entries(counts||{}).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,8);
+  if(!entries.length)return '<span class="adminMuted">Henüz bölüm etkinliği yok</span>';
+  return entries.map(([key,value])=>
+   '<span class="adminChip">'+escapeHtml(pageNames[key]||key)+' · '+Math.max(0,Number(value)||0)+'</span>'
+  ).join(' ');
  }
- function fmtDate(value){if(!value)return 'Henüz yok';const d=new Date(value);return Number.isNaN(d.getTime())?'—':d.toLocaleString('tr-TR',{dateStyle:'medium',timeStyle:'short'});}
+ function renderSubjectTotals(subjects){
+  const entries=Object.entries(subjects||{}).sort((a,b)=>Number(b[1])-Number(a[1]));
+  if(!entries.length)return '<span class="adminMuted">Henüz kaydedilmiş odak oturumu yok</span>';
+  return entries.map(([subject,seconds])=>
+   '<span class="adminChip">'+escapeHtml(subject)+' · '+fmtDuration(seconds)+'</span>'
+  ).join(' ');
+ }
+ function renderTopicTotals(topics){
+  const entries=Object.entries(topics||{}).sort((a,b)=>
+   (Number(b[1]?.attempts)||0)-(Number(a[1]?.attempts)||0)
+  );
+  if(!entries.length)return '<span class="adminMuted">Konu bazlı ölçüm henüz başlamadı</span>';
+  return entries.map(([topic,stats])=>{
+   const attempts=Math.max(0,Number(stats?.attempts)||0);
+   const correct=Math.max(0,Number(stats?.correct)||0);
+   const wrong=Math.max(0,Number(stats?.wrong)||Math.max(0,attempts-correct));
+   const rate=attempts?Math.round(correct/attempts*100):0;
+   return '<div class="adminTopicRow"><span>'+escapeHtml(topic)+'</span><b>'+attempts+' soru · '+correct+' doğru · '+wrong+' yanlış · %'+rate+'</b></div>';
+  }).join('');
+ }
+ function showError(message){
+  const metrics=document.getElementById('mfaAdminMetrics');
+  const body=document.getElementById('mfaAdminRows');
+  if(metrics)metrics.innerHTML='<div class="adminMetric"><small>VERİ DURUMU</small><b>Yüklenemedi</b><small>Bağlantıyı kontrol edip yeniden deneyebilirsin.</small></div>';
+  if(body)body.innerHTML='<tr><td colspan="8" class="mfaAdminError">'+escapeHtml(String(message||'Bilinmeyen hata').slice(0,500))+
+   '<br><button class="btn secondary" type="button" onclick="refreshAdminPanel()" style="margin-top:9px">↻ Tekrar dene</button></td></tr>';
+ }
  async function openAdminPanel(){
-  if(!mfaClient||!mfaUser||String(mfaUser.email||'').toLowerCase()!=='ebrarzakirsag@gmail.com'){alert('Bu alan yalnızca tanımlı yönetici hesabına açıktır.');return;}
+  if(!mfaClient||!mfaUser){alert('Yönetim paneli için yönetici hesabınla giriş yapmalısın.');return;}
   try{
-   const refreshed=await new Promise((resolve,reject)=>{
-    const timer=setTimeout(()=>reject(new Error('Oturum yenileme 8 saniyede tamamlanmadı.')),8000);
-    Promise.resolve(mfaClient.auth.refreshSession()).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
-   });
+   const refreshed=await mfaClient.auth.refreshSession();
    if(refreshed?.data?.session)mfaUser=refreshed.data.session.user;
-  }catch(refreshError){console.warn('Admin session refresh:',refreshError);}
-  
+  }catch(error){console.warn('Admin session refresh:',error);}
+  if(!isAdminUser(mfaUser)){
+   updateAdminButton();
+   alert('Bu alan yalnızca yetkili yönetici hesabına açıktır.');
+   return;
+  }
   currentPage='other';track('other');
   document.getElementById('homePage').hidden=true;
   const extra=document.getElementById('extraPage');extra.hidden=false;
-  extra.innerHTML='<section id="mfaAdminPanel"><div class="adminTop"><div><div class="pageEyebrow">MİNİK AKADEMİ · YÖNETİM</div><h2 style="margin:6px 0">Kullanım paneli 🛠️</h2><p class="tiny">Kayıtlı hesapların site kullanım özeti</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" type="button" onclick="refreshAdminPanel()">↻ Yenile</button><button class="btn" type="button" onclick="goPage(\'home\')">← Siteye dön</button></div></div><div id="mfaAdminMetrics" class="adminCards"><div class="adminMetric">Veriler yükleniyor…</div></div><div class="pageCard"><h3>Hesap bazında kullanım</h3><div class="adminTableWrap"><table><thead><tr><th>HESAP</th><th>KAYIT</th><th>SON GİRİŞ</th><th>TOPLAM KULLANIM</th><th>OTURUM</th><th>SON AKTİFLİK</th><th>EN ÇOK KULLANILAN BÖLÜMLER</th></tr></thead><tbody id="mfaAdminRows"><tr><td colspan="7">Veriler yükleniyor…</td></tr></tbody></table></div><div class="adminPrivacy">Gizlilik: Bu panel yalnızca e-posta, hesap tarihleri ve yaklaşık aktif kullanım süresini/bölüm ziyaretlerini gösterir. Ders notları, soru cevapları ve şifreler burada yer almaz. Kullanım ölçümü, hesap açıkken yaklaşık dakikada bir güncellenir.</div></div></section>';
+  extra.innerHTML='<section id="mfaAdminPanel">'+
+   '<div class="adminTop"><div><div class="pageEyebrow">MİNİK AKADEMİ · YÖNETİM</div><h2 style="margin:6px 0">Öğrenci kullanım paneli 🛠️</h2><p class="tiny">Hesap bazında güvenli öğrenme ve çalışma özeti</p></div>'+
+   '<div class="adminActions"><button class="btn secondary" type="button" onclick="refreshAdminPanel()">↻ Yenile</button><button class="btn" type="button" onclick="goPage(\'home\')">← Siteye dön</button></div></div>'+
+   '<div id="mfaAdminMetrics" class="adminCards"><div class="adminMetric">Veriler yükleniyor…</div></div>'+
+   '<div class="pageCard adminTableCard"><div class="adminTableHeading"><div><h3>Hesap bazında ilerleme</h3><p class="tiny">Süreler ve başarı sayıları hesap kayıtlarından hesaplanır.</p></div></div>'+
+   '<div class="adminTableWrap"><table><thead><tr><th>HESAP</th><th>KAYIT / SON GİRİŞ</th><th>SİTE KULLANIMI</th><th>ODAK OTURUMLARI</th><th>SORU İSTATİSTİĞİ</th><th>KONU / XP</th><th>SON AKTİFLİK</th></tr></thead>'+
+   '<tbody id="mfaAdminRows"><tr><td colspan="7">Veriler yükleniyor…</td></tr></tbody></table></div>'+
+   '<div class="adminPrivacy"><b>Gizlilik ve ölçüm notu</b><br>Site kullanım süresi, sayfa açık ve görünürken yaklaşık dakikada bir ölçülür; bu değer Pomodoro süresinden ayrıdır. Odak süresi, kaydedilmiş Pomodoro/serbest sayaç oturumlarından gelir. Yönetim ekranında ders notları, şifreler, seçilen cevaplar ve görev metinleri gösterilmez. Konu bazlı başarı, bu sürümden itibaren kaydedilen yeni yanıtlarda birikir; geçmişte konu etiketi tutulmamış yanıtlar konuya dağıtılmaz.</div></div></section>';
   await refreshAdminPanel();
  }
  async function refreshAdminPanel(){
-  const metrics=document.getElementById('mfaAdminMetrics'),body=document.getElementById('mfaAdminRows');
+  const metrics=document.getElementById('mfaAdminMetrics');
+  const body=document.getElementById('mfaAdminRows');
   if(!metrics||!body)return;
-  const showError=(message)=>{
-   const safe=esc(String(message||'Bilinmeyen hata').slice(0,500));
-   metrics.innerHTML='<div class="adminMetric"><small>VERİ DURUMU</small><b>Yüklenemedi</b><small>Bağlantıyı kontrol edip yeniden deneyebilirsin.</small></div>';
-   body.innerHTML='<tr><td colspan="7" class="mfaAdminError">'+safe+'<br><button class="btn secondary" type="button" onclick="refreshAdminPanel()" style="margin-top:9px">↻ Tekrar dene</button></td></tr>';
-  };
-  metrics.innerHTML='<div class="adminMetric"><small>VERİ DURUMU</small><b>Yükleniyor…</b><small>Sunucudan güvenli kullanım özeti alınıyor</small></div>';
+  if(!mfaClient||!isAdminUser(mfaUser)){showError('Yönetici oturumu bulunamadı. Yeniden giriş yapıp tekrar dene.');return;}
+  metrics.innerHTML='<div class="adminMetric"><small>VERİ DURUMU</small><b>Yükleniyor…</b><small>Hesap özetleri alınıyor</small></div>';
   body.innerHTML='<tr><td colspan="7">Sunucudan yanıt bekleniyor…</td></tr>';
-  if(!mfaClient){showError('Supabase bağlantısı başlatılamadı. Sayfayı yenileyip tekrar dene.');return;}
-  let timer=null;
+  let timeoutId=null;
   try{
    const result=await Promise.race([
     mfaClient.rpc('admin_get_user_usage'),
-    new Promise((resolve)=>{timer=setTimeout(()=>resolve({data:null,error:{message:'Sunucu 15 saniye içinde yanıt vermedi. Yeniden deneyebilirsin.'}}),15000);})
+    new Promise(resolve=>{timeoutId=setTimeout(()=>resolve({data:null,error:{message:'Sunucu 15 saniye içinde yanıt vermedi.'}}),15000);})
    ]);
-   if(timer)clearTimeout(timer);
+   if(timeoutId)clearTimeout(timeoutId);
    const {data,error}=result||{};
-   if(error){
-    console.error('Admin usage RPC failed:',error);
-    showError([error.message,error.code?'Kod: '+error.code:'',error.hint?'İpucu: '+error.hint:''].filter(Boolean).join(' · '));
-    return;
-   }
+   if(error){console.error('Admin usage RPC:',error);showError([error.message,error.code?'Kod: '+error.code:'',error.hint?'İpucu: '+error.hint:''].filter(Boolean).join(' · '));return;}
    if(!Array.isArray(data)){showError('Sunucudan beklenmeyen veri biçimi döndü.');return;}
    const rows=data;
-   const total=rows.reduce((a,r)=>a+(Number(r.total_seconds)||0),0);
-   const active=rows.filter(r=>r.last_active&&Date.now()-new Date(r.last_active).getTime()<7*86400000).length;
-   metrics.innerHTML='<div class="adminMetric"><small>KAYITLI HESAP</small><b>'+rows.length+'</b><small>Toplam kullanıcı</small></div><div class="adminMetric"><small>SON 7 GÜNDE AKTİF</small><b>'+active+'</b><small>Son etkinliği olan hesap</small></div><div class="adminMetric"><small>TOPLAM ÇALIŞMA SÜRESİ</small><b>'+fmtDuration(total)+'</b><small>Ölçülen yaklaşık süre</small></div>';
+   const totalSite=rows.reduce((sum,row)=>sum+(Number(row.total_seconds)||0),0);
+   const totalFocus=rows.reduce((sum,row)=>sum+(Number(row.focus_seconds)||0),0);
+   const attempts=rows.reduce((sum,row)=>sum+(Number(row.question_attempts)||0),0);
+   const correct=rows.reduce((sum,row)=>sum+(Number(row.correct_questions)||0),0);
+   const active=rows.filter(row=>row.last_active&&Date.now()-new Date(row.last_active).getTime()<7*86400000).length;
+   const completed=rows.reduce((sum,row)=>sum+(Number(row.completed_topics)||0),0);
+   const accuracy=attempts?Math.round(correct/attempts*100):null;
+   metrics.innerHTML=
+    '<div class="adminMetric"><small>KAYITLI HESAP</small><b>'+rows.length+'</b><small>Toplam kullanıcı</small></div>'+
+    '<div class="adminMetric"><small>SON 7 GÜNDE AKTİF</small><b>'+active+'</b><small>Yakın tarihli etkinlik</small></div>'+
+    '<div class="adminMetric"><small>TOPLAM SİTE KULLANIMI</small><b>'+fmtDuration(totalSite)+'</b><small>Yaklaşık görünür sayfa süresi</small></div>'+
+    '<div class="adminMetric"><small>TOPLAM ODAK SÜRESİ</small><b>'+fmtDuration(totalFocus)+'</b><small>Kaydedilmiş sayaç oturumları</small></div>'+
+    '<div class="adminMetric"><small>YANIT DOĞRULUĞU</small><b>'+(accuracy===null?'—':'%'+accuracy)+'</b><small>'+attempts+' ölçülmüş soru yanıtı</small></div>'+
+    '<div class="adminMetric"><small>TAMAMLANAN KONU</small><b>'+completed+'</b><small>Hesapların toplam konu ilerlemesi</small></div>';
    if(!rows.length){body.innerHTML='<tr><td colspan="7">Henüz kayıtlı kullanıcı yok.</td></tr>';return;}
-   body.innerHTML=rows.map(r=>{
-    const pages=Object.entries(r.page_counts||{}).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,3).map(([k,v])=>(pageNames[k]||'Diğer')+' ('+Number(v)+')').join(', ')||'Henüz ölçüm yok';
-    return '<tr><td>'+esc(r.email||'E-posta yok')+'</td><td>'+fmtDate(r.created_at)+'</td><td>'+fmtDate(r.last_sign_in_at)+'</td><td><b>'+fmtDuration(r.total_seconds)+'</b></td><td>'+Number(r.session_count||0)+'</td><td>'+fmtDate(r.last_active)+'</td><td>'+esc(pages)+'</td></tr>';
+   body.innerHTML=rows.map(row=>{
+    const hasQuestionStats=Number(row.question_attempts)>0;
+    const questionCell=hasQuestionStats?
+     '<b>'+Number(row.question_attempts)+'</b><small>'+Number(row.correct_questions||0)+' doğru · '+Number(row.wrong_questions||0)+' yanlış</small>':
+     '<span class="adminMuted">Henüz ölçüm yok</span>';
+    const detail=
+     '<details class="adminDetails"><summary>Detayları aç</summary>'+
+     '<div class="adminDetailGrid"><div><b>Bölüm etkinlik sayaçları</b><div class="adminChipList">'+renderPageCounts(row.page_counts)+'</div></div>'+
+     '<div><b>Odak süresi · ders dağılımı</b><div class="adminChipList">'+renderSubjectTotals(row.focus_by_subject)+'</div></div>'+
+     '<div class="adminDetailFull"><b>Konu bazında yeni soru performansı</b>'+renderTopicTotals(row.topic_performance)+'</div></div></details>';
+    return '<tr><td><b>'+escapeHtml(row.email||'E-posta yok')+'</b><small>Hesap</small></td>'+
+     '<td>'+fmtDate(row.created_at)+'<small>Son giriş: '+fmtDate(row.last_sign_in_at)+'</small></td>'+
+     '<td><b>'+fmtDuration(row.total_seconds)+'</b><small>'+Number(row.session_count||0)+' site oturumu</small></td>'+
+     '<td><b>'+fmtDuration(row.focus_seconds)+'</b><small>'+Number(row.focus_session_count||0)+' odak oturumu · '+Number(row.focus_days||0)+' gün</small></td>'+
+     '<td>'+questionCell+'</td>'+
+     '<td><b>'+Number(row.completed_topics||0)+' konu</b><small>'+Number(row.xp_points||0)+' XP</small></td>'+
+     '<td>'+fmtDate(row.last_active)+detail+'</td></tr>';
    }).join('');
   }catch(error){
-   if(timer)clearTimeout(timer);
+   if(timeoutId)clearTimeout(timeoutId);
    console.error('Admin panel load failed:',error);
-   showError(error?.message||'Yönetim verileri alınırken beklenmeyen bir hata oluştu.');
+   showError(error?.message||'Yönetim verileri alınırken hata oluştu.');
   }
- } window.openAdminPanel=openAdminPanel;
+ }
+ window.openAdminPanel=openAdminPanel;
  window.refreshAdminPanel=refreshAdminPanel;
- window.MINIK_AKADEMI_V27={roomRain:'classic-v21-falling-drops',usageTracking:'minute-heartbeat',adminRpc:'admin_get_user_usage'};
- // Refresh the JWT once so the newly assigned app_metadata role appears without requiring a manual re-login.
+ window.MINIK_AKADEMI_V36={usageTracking:'minute-heartbeat',adminRpc:'admin_get_user_usage',focusAnalytics:true,topicAnalytics:true};
  if(mfaClient){
   mfaClient.auth.refreshSession().then(({data,error})=>{
-   if(data&&data.session){mfaUser=data.session.user;mfaUpdateAccountUI();if(mfaUser)mfaLoadCloud();}
+   if(data?.session){mfaUser=data.session.user;mfaUpdateAccountUI();if(mfaUser)mfaLoadCloud();}
    else if(error)console.warn('Session refresh:',error.message);
-  }).catch(e=>console.warn('Session refresh:',e));
+  }).catch(error=>console.warn('Session refresh:',error));
  }
  mfaUpdateAccountUI();
 })();
@@ -3890,5 +4041,55 @@ body.mfa-night #mfaGuideClose{background:#25334a;border-color:#43516a;color:#edf
 })();
 </script>
 
+<script id="mfa-v36-question-tracking">
+(function(){
+ 'use strict';
+ function getUnit(){
+  try{
+   if(typeof currentUnit==='function')return currentUnit();
+   if(typeof allUnits!=='undefined'&&Array.isArray(allUnits))return allUnits[current];
+   if(typeof units!=='undefined'&&Array.isArray(units))return units[current];
+  }catch(_){}
+  return null;
+ }
+ function recordAfterAnswer(before,unit,question,choice){
+  if(before!==undefined||!window.mfaRecordQuestionStat)return;
+  const after=answers&&answers[`${current}-${typeof testSet!=='undefined'?testSet:0}-${typeof qIndex!=='undefined'?qIndex:0}`];
+  if(after===undefined)return;
+  const subject=unit?.subject||'Ders';
+  const topic=unit?.title||unit?.name||'Genel';
+  window.mfaRecordQuestionStat(subject,topic,Number(choice)===Number(question?.ans));
+ }
+ if(typeof window.answerCourse==='function'){
+  const old=window.answerCourse;
+  window.answerCourse=function(choice){
+   const unit=getUnit();
+   const key=`${current}-0-${qIndex}`;
+   const before=answers?.[key];
+   const question=unit?.bank?.[qIndex];
+   const result=old.apply(this,arguments);
+   if(before===undefined&&answers?.[key]!==undefined&&unit&&question){
+    window.mfaRecordQuestionStat?.(unit.subject||'Ders',unit.title||unit.name||'Genel',Number(choice)===Number(question.ans));
+   }
+   return result;
+  };
+ }
+ if(typeof window.mfaQuizAnswer==='function'){
+  const old=window.mfaQuizAnswer;
+  window.mfaQuizAnswer=function(choice){
+   const unit=getUnit();
+   const key=`${current}-${testSet}-${qIndex}`;
+   const before=answers?.[key];
+   const question=unit?.bank?.[testSet*10+qIndex];
+   const result=old.apply(this,arguments);
+   if(before===undefined&&answers?.[key]!==undefined&&unit&&question){
+    window.mfaRecordQuestionStat?.(unit.subject||'Ders',unit.title||unit.name||'Genel',Number(choice)===Number(question.ans));
+   }
+   return result;
+  };
+ }
+ window.MINIK_AKADEMI_V36_TRACKING={topicStats:true,questionHandlers:['physics','course','all-course']};
+})();
+</script>
 </body>
 </html>
