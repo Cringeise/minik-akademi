@@ -74,3 +74,20 @@ jobs:
           grep -q "app_metadata" supabase/admin_usage_analytics_v36.sql
           grep -q "Hesap bazında kullanım ölçümü" gizlilik.html
           echo "SQL and privacy files passed basic checks."
+      - name: Prepare local HTML preview
+        run: |
+          mkdir -p visual-preview
+          cp index.html visual-preview/index.html
+          cat > visual-preview/INCELEME.txt <<'EOF'
+          MINIK AKADEMI v36 - GORSEL INCELEME
+          
+          index.html dosyasini Chrome veya Edge ile ac.
+          Sayfanin gorunumu, dersler ve Pomodoro arayuzu yerel HTML onizlemesinde incelenebilir.
+          Supabase giris / bulut esitleme ozellikleri file:// yerel adresinde tarayici guvenlik sinirlari nedeniyle calismayabilir.
+          Bu paket main dalina veya canli siteye yayin yapmaz.
+          EOF
+      - uses: actions/upload-artifact@v4
+        with:
+          name: minik-akademi-v36-html-preview
+          path: visual-preview/
+          retention-days: 7
